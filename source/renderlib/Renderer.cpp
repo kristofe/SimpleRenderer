@@ -256,6 +256,10 @@ void Renderer::onWindowResize(GLFWwindow* window, int width, int height)
 
 void Renderer::onWindowFocus(int focused)
 {
+  if(focused)
+  {
+    ShaderManager::getInstance().reloadShaders();
+  }
 
 }
 

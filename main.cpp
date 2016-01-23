@@ -7,6 +7,7 @@
 	#pragma comment(lib, "GLFW/glfw3dll.lib")
 	#pragma comment(lib, "opengl32.lib")
 	#include <GL/glew.h>
+  #include "win32_debug_buffer.h"
 #endif
 
 #include <stdlib.h>
@@ -14,20 +15,40 @@
 #include <iostream>
 #include <cmath>
 #include "GLFW/glfw3.h" // - lib is in /usr/local/lib/libglfw3.a
-
-
 #include "Platform.h"
+#include "Renderer.h"
+#include "RenderManager.h"
+#include "ShaderManager.h"
+#include "GLFWTime.h"
+#include "WindowManager.h"
 
-static int winWidth = 800;
-static int winHeight = 800;
+//These should be moved into a class 
+uvec2 windowSize{512,512};
+ivec2 windowPosition{0,0};
+ivec2 mousePosition;
+bool mouseDown{false};
+bool mouseRightDown{false};
 
+GLFWwindow * window{ nullptr };
+unsigned int frame{ 0 };
+unsigned int vsync{1};
+unsigned int multiSampleCount = 1;
+
+Renderer* renderer;
 
 
 void hintOpenGLCoreProfile(int major, int minor){
+  glfwWindowHint(GLFW_DEPTH_BITS, 16);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  #ifdef DEBUG_BUILD
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
+  if(multiSampleCount > 1){
+    glfwWindowHint(GLFW_SAMPLES, multiSampleCount);
+  }
 }
 
 
@@ -47,127 +68,159 @@ static void keyHandler(GLFWwindow* window, int key, int scancode, int action, in
   {
     
   }
+  
+  if ((key == 'r' || key == 'R') && action == GLFW_PRESS)
+  {
+    ShaderManager::getInstance().reloadShaders();
+  }
+  KeyInfo k(key, (renderlib::KeyInfo::KeyAction)action, mods);
+  InputManager::handleKey(k);
+
+  renderer->onKey(key, scancode, action, mods);
 }
 
 static void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods)
 {
   if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
   {
-
+      mouseDown = true;
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 0);
   }
   else if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE)
   {
-
+      mouseDown = false;
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 0);
   }
   else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS)
   {
-
+      mouseRightDown = true;
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 1);
+      //trackball->ReturnHome();
   }
   else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_RELEASE)
   {
 
-     
+      mouseRightDown = false;
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 1);
   }
+
+  renderer->onMouseButton(button, action, mods);
 }
 
 static void mousePositionHandler(GLFWwindow* window, double x, double y)
 {
-
+    if(mousePosition.x != (int)x || mousePosition.y != (int)y){
+    mousePosition.x = (int)x;
+    mousePosition.y = (int)y;
+    if(mouseDown)
+    {
+      InputManager::updatePointer(
+          vec2(mousePosition.x,mousePosition.y),
+          1.0f, 
+          1.0f, 
+          1.0f, 
+          0);
+    }
+  }
+  renderer->onMouseMove(x,y);
 }
 
 static void mouseScrollHandler(GLFWwindow* window, double xoffset, double yoffset)
 {
-
+  renderer->onMouseScroll(xoffset, yoffset);
 }
 
 void resizeViewport(GLFWwindow* window){
-  glfwGetFramebufferSize(window, &winWidth, &winHeight);
-  glViewport(0, 0, winWidth, winHeight);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glfwGetFramebufferSize(window, (int*)&windowSize.x, (int*)&windowSize.y);
+  //glClear(GL_COLOR_BUFFER_BIT);
+  renderer->resizeViewport(window);
 }
 
 static void windowResizeHandler(GLFWwindow* window, int width, int height)
 {
   resizeViewport(window);
+  renderer->onWindowResize(window, width, height);
 }
 
-
-
-#include <iostream>
-#include <fstream>
-static GLuint load3DScan(const std::string& filename,int dx, int dy, int dz)
+static void windowFocusHandler(GLFWwindow* window, int focused)
 {
-    GLuint handle;
-    glGenTextures(1, &handle);
-    glBindTexture(GL_TEXTURE_3D, handle);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-
-    int array_size = dx*dy*dz;
-    unsigned short *data = new unsigned short[array_size];
-
-    int position = 0;
-    size_t chunkSize = sizeof(unsigned short)*512;
-
-    std::ifstream fin(filename.c_str(), std::ios::in|std::ios::binary);
-    if(fin.fail())
-    {
-      std::cout << "Could not find " << filename << std::endl;
-    }
-    while(fin.read((char*)&data[position],chunkSize))
-    {
-      position += 512;
-
-    }
-
-
-    fin.close();
-
-    glTexImage3D(GL_TEXTURE_3D, 0,
-                 GL_RED,
-                 dx, dy, dz, 0,
-                 GL_RED,
-                 GL_UNSIGNED_SHORT,
-                 data);
-
-    delete[] data;
-    return handle;
+  renderer->onWindowFocus(focused);
 }
-
 
 void initialize()
 {
   printf("Initializing...\n");
+  std::cout << GetCurrentDir() << std::endl;
+  ChangeParentDir("shaders");
+
+  //windowSize = {960,1080};
+  RenderManager::getInstance().setPrintFPS(true);
+  RenderManager::getInstance().setPrintFPSInterval(3.0f);
+  InputManager::init();
+  renderer = new Renderer();
+
+  GetGLError();
+  GLFWTime::init();
+  GetGLError();
+  WindowManager::_mainWindowSize.set(windowSize.x,windowSize.y);
+  GetGLError();
+  
+  renderer->postCreate();
+  renderer->initGl();
+  
+  Vector2 size = RenderManager::getInstance().getFramebufferSize();
+  float aspect = size.x/size.y;
+  
+  float n = 0.01f;
+  float f = 1000.0f;
+  float fieldOfView = 0.7f;// 1.74532925f;//100 degrees
+  
+  vec3 eyePos = vec3(0.0f, 0.0f, 5.0f);
+  mat4 projection = glm::perspective(fieldOfView, aspect, n, f);
+  mat4 modelview = glm::lookAt( eyePos, vec3(0.0f,0.0f,0.0f),vec3(0.0f,1.0f,0.0f));
+
+  vec4 eyePosCheck = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  eyePosCheck = glm::inverse(modelview) * eyePosCheck;
+  Camera& c = RenderManager::getInstance().getMainCamera();
+  c.setProjection(projection);
+  c.setModelview(modelview);
+  c.setFieldOfView(fieldOfView);
+
+  c.setEyePosition(vec3(eyePosCheck));
+
 }
 
 void render()
 {
   glClearColor(0.0f,0.0f,0.1f,1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  renderer->draw();
 }
 
 static void update(double seconds)
 {
+  GLFWTime::setTime((float)seconds);
+  RenderManager& rm = RenderManager::getInstance();
+  rm.updateFPS((float)GLFWTime::getDT());
 
+  renderer->update();
 }
 
 int main(void)
 {
+#ifdef WIN32
+  RedirectStdoutToMSVC();
+#endif
+
   GLFWwindow* window;
   glfwSetErrorCallback(error_callback);
   if (!glfwInit())
     exit(EXIT_FAILURE);
 
   hintOpenGLCoreProfile(4, 1);
-  winWidth = 800;
-  winHeight = 800;
 
-  window = glfwCreateWindow(winWidth, winHeight, "3D Renderer", NULL, NULL);
+  window = glfwCreateWindow(windowSize.x, windowSize.y, "3D Renderer", NULL, NULL);
 
   if (!window)
   {
@@ -181,7 +234,10 @@ int main(void)
   glfwSetMouseButtonCallback(window, mouseButtonHandler);
   glfwSetScrollCallback(window, mouseScrollHandler);
   glfwSetWindowSizeCallback(window, windowResizeHandler);
+  glfwSetWindowFocusCallback(window, windowFocusHandler);
 
+  int vsync = 0;//0 decoupled. 1 every refresh
+  glfwSwapInterval(vsync);
 
 #if!__APPLE__
   // initialise GLEW
@@ -196,6 +252,7 @@ int main(void)
 
   initialize();
 
+  resizeViewport(window);
 
   while (!glfwWindowShouldClose(window))
   {
@@ -205,6 +262,8 @@ int main(void)
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+  renderer->shutdownGl();
+
   glfwDestroyWindow(window);
   glfwTerminate();
   exit(EXIT_SUCCESS);
