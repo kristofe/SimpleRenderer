@@ -1,0 +1,14 @@
+build
+CMakeCache.txt
+cmake_install.cmake
+CMakeFiles
+Makefile
+.DS_Store
+Thumbs.db
+.mayaSwatches
+*.swo
+*.swp
+libs/ft243_src/
+#libs/libRocket_src/Dependencies/
+#libs/libRocket_src/Include/
+#libs/libRocket_src/Source/

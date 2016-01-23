@@ -1,0 +1,79 @@
+//
+//  SimpleMeshRenderer.h
+//  Splash
+//
+//  Created by Kristofer Schlachter on 6/19/14.
+//
+//
+
+#ifndef __Splash__SimpleMeshRenderer__
+#define __Splash__SimpleMeshRenderer__
+
+#include <iostream>
+#include "vmath.hpp"
+#include "IRenderable.h"
+#include "Texture.h"
+#include "RenderTexture.h"
+#include "RenderManager.h"
+#include "Model.h"
+#include "FPSController.h"
+
+namespace renderlib {
+  
+  class Mesh;
+  class Shader;
+  class TextureProxy;
+  
+  class SimpleMeshRenderer : public IRenderable
+  {
+  public:
+    SimpleMeshRenderer();
+    virtual ~SimpleMeshRenderer();
+    
+    void init();
+    void update(float time);
+    void fixedUpdate(){};
+    
+    void preRender();
+    void draw();
+    void postRender();
+    void resize() {};
+    void reset() {};
+    void handleKey(KeyInfo& key) {};
+    void handlePointer(std::vector<PointerInfo>& pointers){};
+    
+    int  getRenderSortValue() {return _renderSortValue;};
+    uint32_t  getID() {return _renderObjectID;};
+
+    //C++ 11 way of hiding these methods
+    //no copy constructor or copy assignment operato
+    SimpleMeshRenderer(const SimpleMeshRenderer&) = delete;
+    SimpleMeshRenderer & operator=(const SimpleMeshRenderer&) = delete;
+    
+  protected:
+    int _renderSortValue;
+    uint32_t _renderObjectID;
+    bool _debugDraw = {true};
+    
+    Mesh* _mesh;
+    Shader* _shader;
+    vmath::Matrix4 _mvp;
+    vmath::Matrix4 _mvpRot;
+    //vmath::Matrix4 _m;
+    mat4 _m;
+    vec3 _position;
+    quat _orientation;
+    vec2 _angles;
+
+    Model _model;
+    
+    //TextureProxy* _tex;
+    Texture _texture;
+    RenderTexture _renderTexture;
+
+
+    std::shared_ptr<FPSController> _fpsController;
+  };
+
+} // namespace renderlib
+#endif /* defined(__Splash__SimpleMeshRenderer__) */
