@@ -19,8 +19,23 @@
 #include "Renderer.h"
 #include "RenderManager.h"
 #include "ShaderManager.h"
+#include "InputManager.h"
 #include "GLFWTime.h"
 #include "WindowManager.h"
+
+//Renderable objects
+#include "SimpleMeshRenderer.h"
+#include "TrainingDataRenderer.h"
+#include "PlatformRoom.h"
+#include "InstancedMeshRenderer.h"
+#include "SimpleDistanceFieldRenderer.h"
+#include "SimpleDFPathTracer.h"
+#include "SimpleVolumeRenderer.h"
+#include "MarchingCubesRenderer.h"
+#include "FluidSim.h"
+#include "FluidSim.h"
+#include "WaveSim.h"
+#include "Painter.h"
 
 //These should be moved into a class 
 uvec2 windowSize{512,512};
@@ -34,8 +49,46 @@ unsigned int frame{ 0 };
 unsigned int vsync{1};
 unsigned int multiSampleCount = 1;
 
+using namespace renderlib;
+
 Renderer* renderer;
 
+static void handleSceneChange(int key, int scancode, int action, int mods)
+{
+ 	if (action == GLFW_RELEASE)
+  {
+    std::shared_ptr<IRenderable> p = nullptr;
+    if (key == '1') {
+      p = std::make_shared<SimpleMeshRenderer>();
+    }
+    if (key == '2') {
+      p = std::make_shared<MarchingCubesRenderer>();
+    }
+    if (key == '3') {
+      //p = std::make_shared<SimpleVolumeRenderer>();
+      p = std::make_shared<InstancedMeshRenderer>();
+    }
+    if (key == '4') {
+      p = std::make_shared<PlatformRoom>();
+    }
+    if (key == '5') {
+      p = std::make_shared<FluidSim>();
+    }
+    if (key == '6') {
+      p = std::make_shared<SimpleDFPathTracer>();
+    }
+    if (key == '7') {
+      p = std::make_shared<SimpleDistanceFieldRenderer>();
+    }
+    if(p != nullptr)
+    {
+      renderer->clearRenderObjects();
+      p->init();
+      renderer->addRenderObject(p);
+    }
+  }
+ 
+}
 
 void hintOpenGLCoreProfile(int major, int minor){
   glfwWindowHint(GLFW_DEPTH_BITS, 16);
@@ -63,11 +116,6 @@ static void keyHandler(GLFWwindow* window, int key, int scancode, int action, in
   {
     glfwSetWindowShouldClose(window, GL_TRUE);
   }
-
-  if (key == '1' && action == GLFW_PRESS)
-  {
-    
-  }
   
   if ((key == 'r' || key == 'R') && action == GLFW_PRESS)
   {
@@ -77,6 +125,8 @@ static void keyHandler(GLFWwindow* window, int key, int scancode, int action, in
   InputManager::handleKey(k);
 
   renderer->onKey(key, scancode, action, mods);
+  
+  handleSceneChange(key, scancode, action, mods);
 }
 
 static void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods)
@@ -168,6 +218,11 @@ void initialize()
   renderer->postCreate();
   renderer->initGl();
   
+  std::shared_ptr<IRenderable> p = std::make_shared<SimpleDFPathTracer>();
+  p->init();
+  renderer->clearRenderObjects();
+  renderer->addRenderObject(p);
+  
   Vector2 size = RenderManager::getInstance().getFramebufferSize();
   float aspect = size.x/size.y;
   
@@ -187,6 +242,7 @@ void initialize()
   c.setFieldOfView(fieldOfView);
 
   c.setEyePosition(vec3(eyePosCheck));
+  
 
 }
 

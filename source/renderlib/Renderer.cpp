@@ -29,18 +29,6 @@ extern "C" {
 #include "ObjectIDGenerator.h"
 #include "EngineObjectFactory.h"
 #include "InputManager.h"
-#include "SimpleMeshRenderer.h"
-#include "TrainingDataRenderer.h"
-#include "PlatformRoom.h"
-#include "InstancedMeshRenderer.h"
-#include "SimpleDistanceFieldRenderer.h"
-#include "SimpleDFPathTracer.h"
-#include "SimpleVolumeRenderer.h"
-#include "MarchingCubesRenderer.h"
-#include "FluidSim.h"
-#include "FluidSim.h"
-#include "WaveSim.h"
-#include "Painter.h"
 #include "WindowManager.h"
 #include "GLFWTime.h"
 #include "shader.h"
@@ -49,24 +37,9 @@ extern "C" {
 using namespace renderlib;
 using namespace vmath;
 
-//#define START_SIM TrainingDataRenderer
-//#define START_SIM SimpleMeshRenderer
-//#define START_SIM SimpleVolumeRenderer
-//#define START_SIM MarchingCubesRenderer
-#define START_SIM SimpleDFPathTracer
-
-void Renderer::createObjects(){
-  std::shared_ptr<START_SIM> p = std::make_shared<START_SIM>();
-  p->init();
-  addRenderObject(p);
-
-}
-
-
 
 Renderer::Renderer()
 {
-
   
 }
 
@@ -78,7 +51,6 @@ void Renderer::addRenderObject(std::shared_ptr<IRenderable> ro)
 
 void Renderer::postCreate()
 {
-  
   
 }
 
@@ -98,15 +70,20 @@ void Renderer::initGl()
   std::cout << GLUtil::getOpenGLInfo() << std::endl; std::cout.flush();
   //UI::log(GLUtil::getOpenGLInfo());
   
-  createObjects();
 
 }
 
-void Renderer::shutdownGl() 
+void Renderer::clearRenderObjects()
 {
   for(auto sim : renderObjects){
     sim->reset();
   }
+  renderObjects.clear();
+}
+
+void Renderer::shutdownGl() 
+{
+  clearRenderObjects();
 }
 
 void Renderer::draw()
@@ -133,87 +110,7 @@ void Renderer::update()
 
 void Renderer::onKey(int key, int scancode, int action, int mods)
 {
-	if (action == GLFW_RELEASE)
-	{
-		if (key == '1') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
 
-			renderObjects.clear();
-			std::shared_ptr<SimpleMeshRenderer> p = std::make_shared<SimpleMeshRenderer>();
-			p->init();
-			addRenderObject(p);
-		}
-		if (key == '2') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
-
-			renderObjects.clear();
-			std::shared_ptr<MarchingCubesRenderer> p = std::make_shared<MarchingCubesRenderer>();
-			p->init();
-			addRenderObject(p);
-		}
-		if (key == '3') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
-
-			renderObjects.clear();
-			//std::shared_ptr<SimpleVolumeRenderer> p = std::make_shared<SimpleVolumeRenderer>();
-			std::shared_ptr<InstancedMeshRenderer> p = std::make_shared<InstancedMeshRenderer>();
-			p->init();
-			addRenderObject(p);
-		}
-		if (key == '4') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
-
-			renderObjects.clear();
-			std::shared_ptr<PlatformRoom> p = std::make_shared<PlatformRoom>();
-			p->init();
-			addRenderObject(p);
-		}
-		if (key == '5') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
-
-			renderObjects.clear();
-			std::shared_ptr<FluidSim> p = std::make_shared<FluidSim>();
-			p->init();
-			addRenderObject(p);
-		}
-		if (key == '6') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
-
-			renderObjects.clear();
-			std::shared_ptr<SimpleDFPathTracer> p = std::make_shared<SimpleDFPathTracer>();
-			p->init();
-			addRenderObject(p);
-		}
-		if (key == '7') {
-			for (auto p : renderObjects)
-			{
-				p->reset();
-			}
-
-			renderObjects.clear();
-			std::shared_ptr<SimpleDistanceFieldRenderer> p = std::make_shared<SimpleDistanceFieldRenderer>();
-			p->init();
-			addRenderObject(p);
-		}
-	}
 }
 
 void Renderer::onMouseButton(int button, int action, int mods)
