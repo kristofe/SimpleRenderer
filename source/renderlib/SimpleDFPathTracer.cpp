@@ -115,6 +115,7 @@ void SimpleDFPathTracer::preRender()
 
 void SimpleDFPathTracer::draw()
 {
+  glDisable(GL_DEPTH_TEST);
   _shader->bind();
   _texture.bindToChannel(0);
   _shader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
@@ -127,6 +128,8 @@ void SimpleDFPathTracer::draw()
   _shader->unbind();
 
   _texture.debugDraw();
+  
+  glEnable(GL_DEPTH_TEST);
 
 }
 

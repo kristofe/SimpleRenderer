@@ -121,6 +121,7 @@ void FluidSim::simulate()
 
 void FluidSim::draw()
 {
+  glDisable(GL_DEPTH_TEST);
   GLuint windowFbo = 0;
   //void PezRender(GLuint windowFbo)
   //{
@@ -150,6 +151,7 @@ void FluidSim::draw()
   // Disable blending:
   glDisable(GL_BLEND);
   //}
+  glEnable(GL_DEPTH_TEST);
 }
 
 

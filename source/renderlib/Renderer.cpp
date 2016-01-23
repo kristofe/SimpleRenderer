@@ -133,7 +133,7 @@ void Renderer::update()
 
 void Renderer::onKey(int key, int scancode, int action, int mods)
 {
-	//if (action == GLFW_KEY_UP)
+	if (action == GLFW_RELEASE)
 	{
 		if (key == '1') {
 			for (auto p : renderObjects)
