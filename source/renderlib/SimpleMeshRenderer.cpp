@@ -50,6 +50,7 @@ void SimpleMeshRenderer::init()
   //_renderTexture.setupFBO(1024,1024,true, GL_RGBA8, GL_RGBA,TextureDataType::TDT_UBYTE);
   //_renderTexture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
   //_renderTexture.setClearColor(Color(0.0f, 0.0f, 0.2f, 1.0f));
+  //_texture.setupDebugData(Vector2(0.0, 0.0), Vector2(1.0, 1.0));
 
 
   //_model.loadModelFromFile("assets/models/sponza/sponza.obj");
@@ -169,6 +170,7 @@ void SimpleMeshRenderer::draw()
   }
   _renderTexture.clear();
  */
+  //_texture.debugDraw();
 }
 
 void SimpleMeshRenderer::postRender()

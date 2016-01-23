@@ -198,9 +198,9 @@ namespace renderlib
   void Mesh::createTriangle()
   {
     Vector3 norm(0, 0, -1);
-    _positions.push_back(Vector3(0.1f,0.1f,0.5f));
-    _positions.push_back(Vector3(0.9f,0.1f,0.5f));
-    _positions.push_back(Vector3(0.5f,0.9f,0.5f));
+    _positions.push_back(Vector3(0.0f,0.0f,0.5f));
+    _positions.push_back(Vector3(1.0f,0.0f,0.5f));
+    _positions.push_back(Vector3(0.5f,1.0f,0.5f));
   
     _normals.push_back(norm);
     _normals.push_back(norm);
@@ -293,7 +293,9 @@ namespace renderlib
 
   void Mesh::createScreenQuad(Vector2 min,Vector2 max)
   {
+    Color c(0.0, 0.0, 0.0, 1.0);
     Vector3 norm(0,0,1);
+    Vector4 tangent(0,0,0,0);
     Vector3 p0( min.x, min.y, 0.0);
     Vector3 p1( max.x, min.y, 0.0);
     Vector3 p2( min.x, max.y, 0.0);
@@ -315,9 +317,15 @@ namespace renderlib
     _normals.push_back(norm);
     _normals.push_back(norm);
     _normals.push_back(norm);
+    _tangents.push_back(tangent);
+    _tangents.push_back(tangent);
+    _tangents.push_back(tangent);
     _uvs.push_back(uv0);
     _uvs.push_back(uv1);
     _uvs.push_back(uv2);
+    _colors.push_back(c);
+    _colors.push_back(c);
+    _colors.push_back(c);
 
     //Second Triangle
     _positions.push_back(p3);
@@ -326,9 +334,15 @@ namespace renderlib
     _normals.push_back(norm);
     _normals.push_back(norm);
     _normals.push_back(norm);
+    _tangents.push_back(tangent);
+    _tangents.push_back(tangent);
+    _tangents.push_back(tangent);
     _uvs.push_back(uv3);
     _uvs.push_back(uv4);
     _uvs.push_back(uv5);
+    _colors.push_back(c);
+    _colors.push_back(c);
+    _colors.push_back(c);
 
 
     if(bufferInfo == nullptr)
@@ -893,7 +907,7 @@ namespace renderlib
     if(min.z)
       trans.z = -min.z;
   
-    glm::vec3 fudge(1e-6);//pull geometry away from the edges
+    glm::vec3 fudge(0.0);//pull geometry away from the edges
     trans = trans + fudge;
   
     //find the longest side and scale everything so it fits into a dim of one.
@@ -908,7 +922,7 @@ namespace renderlib
       maxDim = diff.z;
     }
   
-  float fudgeFactor = 0.8f; //Pull geometry away from the edges
+  float fudgeFactor = 0.9999f; //Pull geometry away from the edges
     glm::mat4 xform =  glm::scale(glm::vec3((1.0f/maxDim))*fudgeFactor);
     xform = xform * glm::translate(trans);
   

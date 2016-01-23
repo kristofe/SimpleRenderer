@@ -50,12 +50,15 @@ private:
 
 //Data Members
 public:
-  Vector3 position;
+  Vector3 position;//Driver wants these on 2 or 4 float boundaries
   Vector3 normal;
   Vector2 uv;
   Vector4 tangent;
   Color   color;
 };
+//INFO: For nvidia n-sight.  The buffer stride is 72.  And for memory use 18 columns of 32-bit floats.
+//I know this is weird given that this was supposed to be 64 bytes stride of 16 32 bit floats. 
+//Where did the 8 bytes or 2 floats come from????
 
 
 }

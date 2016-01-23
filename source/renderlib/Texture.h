@@ -92,6 +92,7 @@ protected:
   Shader* _debugShader;
   std::string _path;
   std::string _type;
+  bool _is3D;
 };
 
 } //namespace renderlib

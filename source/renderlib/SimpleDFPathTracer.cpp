@@ -59,19 +59,31 @@ void SimpleDFPathTracer::init()
   
   _mvp.identity();
   Mesh testMesh;
-  //testMesh.createSphereMeshData(4, 4);
+  testMesh.createSphereMeshData(4, 4);
   //testMesh.createCube(Vector3(0.5f), Vector3(1.0f));
-  testMesh.createTriangle();
-  //testMesh.fitIntoUnitCube();
+  //testMesh.createTriangle();
+  testMesh.fitIntoUnitCube();
+
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
+
   
   //FIXME: Need to scale mesh to fit in a 1x1x1 sized box whose coordinates
   //range [0,1]
-  _texture.createDistanceFieldFromMesh(8, testMesh);
-  //_texture.createPyroclasticDistanceField(64, 0.3f, 0.0f);
+  _texture.createDistanceFieldFromMesh(32, testMesh);
+  //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
 
   //_texture.loadPNG("assets/tiles.png",TextureFilterMode::LINEAR, TextureClampMode::CLAMP_TO_EDGE);
-  _renderTexture.setupFBO(1024,1024,true, GL_RGBA8, GL_RGBA,TextureDataType::TDT_UBYTE);
-  _renderTexture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
+  _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
+  //_renderTexture.setupFBO(1024,1024,true, GL_RGBA8, GL_RGBA,TextureDataType::TDT_UBYTE);
+  //_renderTexture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
 }
 
@@ -113,6 +125,8 @@ void SimpleDFPathTracer::draw()
   
   _mesh->drawBuffers();
   _shader->unbind();
+
+  _texture.debugDraw();
 
 }
 

@@ -173,8 +173,8 @@ public:
                                            const glm::vec3& a,
                                            const glm::vec3& b,
                                            const glm::vec3& c);
-  void interpolateNormal(glm::vec3 n0, glm::vec3 n1, glm::vec3 n2,
-                         glm::vec3& interpolatedNormal);
+  void interpolateNormal(glm::vec3 const& n0, glm::vec3 const& n1, glm::vec3 const& n2,
+	  glm::vec3 const& barycentricCoord, glm::vec3& interpolatedNormal);
   
   float getSignOfDistanceToPoint(const glm::vec3 p,
                                 const glm::vec3 a,
@@ -183,6 +183,9 @@ public:
   
   float getClosestPoint(glm::vec3 p, glm::vec3& closestPoint,
                               glm::vec3& closestNormal);
+  float distancePointTriangleExact(
+	  glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
+	  glm::vec3& closestPoint, glm::vec3& barycentricCoords);
 
 
 private:
@@ -214,13 +217,14 @@ protected:
 
 };
 
-  inline void Mesh::interpolateNormal(glm::vec3 n0, glm::vec3 n1, glm::vec3 n2,
+  inline void Mesh::interpolateNormal(glm::vec3 const& n0, glm::vec3 const& n1, glm::vec3 const& n2,
+                                glm::vec3 const& barycentricCoord,
                                 glm::vec3& interpolatedNormal)
   {
     //For now I am not interpolating... this will need consideration
     interpolatedNormal = n0;
   }
-
+  
   inline glm::vec3 Mesh::closestPointOnTriangle(const glm::vec3& p,
                                                 const glm::vec3& a,
                                                 const glm::vec3& b,
@@ -285,6 +289,7 @@ protected:
                                 const glm::vec3 b,
                                 const glm::vec3 c)
   {
+	//FIXME: BROKEN SOMEHOW weird distance or sign flips possible?
     //TODO: Don't know if this orients the plane/triangle properly
     //I can assume that the triangle's vertices are in CCW order... but i am not
     //using that fact yet
@@ -313,7 +318,8 @@ inline float Mesh::getClosestPoint(
              glm::vec3& closestNormal)
 {
   int ti0, ti1, ti2;
-  float closestDistanceSqr = 1e9;
+  glm::vec3 tmpClosestPoint,closestPointBarycentric;
+  float closestDistanceSqr = 1e4;
   //loop through each triangle and store closest point and triangle (for
   //defferred normal calculation)
   if(_indices.size() > 0)
@@ -327,13 +333,18 @@ inline float Mesh::getClosestPoint(
       vec3 p0(_positions[i0].x, _positions[i0].y, _positions[i0].z);
       vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
       vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
-    
+
+      /*
       glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
       glm::vec3 diff = p - tmpPoint;
       float distSqr = glm::dot(diff,diff);
+	  */
+	  glm::vec3 tmpPoint, tmpBarycentric;
+	  float distSqr = distancePointTriangleExact(p, p0, p1, p2, tmpPoint, tmpBarycentric);
       if(distSqr < closestDistanceSqr){
         closestDistanceSqr = distSqr;
-        closestPoint = tmpPoint;
+        tmpClosestPoint = tmpPoint;
+		closestPointBarycentric = tmpBarycentric;
         ti0 = i0; ti1 = i1; ti2 = i2;
       }
     
@@ -351,12 +362,17 @@ inline float Mesh::getClosestPoint(
       vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
       vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
     
+	  /*
       glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
       glm::vec3 diff = p - tmpPoint;
       float distSqr = glm::dot(diff,diff);
+	  */
+	  glm::vec3 tmpPoint, tmpBarycentric;
+	  float distSqr = distancePointTriangleExact(p, p0, p1, p2, tmpPoint, tmpBarycentric);
       if(distSqr < closestDistanceSqr){
         closestDistanceSqr = distSqr;
-        closestPoint = tmpPoint;
+        tmpClosestPoint = tmpPoint;
+		closestPointBarycentric = tmpBarycentric;
         ti0 = i0; ti1 = i1; ti2 = i2;
       }
     }
@@ -368,11 +384,215 @@ inline float Mesh::getClosestPoint(
   vec3 n0(_normals[ti0].x, _normals[ti0].y, _normals[ti0].z);
   vec3 n1(_normals[ti1].x, _normals[ti1].y, _normals[ti1].z);
   vec3 n2(_normals[ti2].x, _normals[ti2].y, _normals[ti2].z);
-  interpolateNormal(n0, n1,n2, closestNormal);
-  float sign = getSignOfDistanceToPoint(p, p0,p1,p2);
-  return sqrtf(closestDistanceSqr)*sign;
+  interpolateNormal(n0, n1,n2, closestPointBarycentric,closestNormal);
+  closestPoint = tmpClosestPoint;
+  //float sign = getSignOfDistanceToPoint(p, p0,p1,p2);
+  float dist = sqrtf(closestDistanceSqr);
+  return dist;
 }
 
+inline float Mesh::distancePointTriangleExact(
+	glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
+	glm::vec3& closestPoint, glm::vec3& barycentricCoords)
+{
+	glm::vec3 diff = point - a;
+	glm::vec3 edge0 = b - a;
+	glm::vec3 edge1 = c - a;
+	float a00 = glm::dot(edge0, edge0);
+	float a01 = glm::dot(edge0, edge1);
+	float a11 = glm::dot(edge1, edge1);
+	float b0 = -glm::dot(diff, edge0);
+	float b1 = -glm::dot(diff, edge1);
+	float const zero = (float)0;
+	float const one = (float)1;
+	float det = a00 * a11 - a01 * a01;
+	float t0 = a01 * b1 - a11 * b0;
+	float t1 = a01 * b0 - a00 * b1;
+
+	if (t0 + t1 <= det)
+	{
+		if (t0 < zero)
+		{
+			if (t1 < zero)  // region 4
+			{
+				if (b0 < zero)
+				{
+					t1 = zero;
+					if (-b0 >= a00)  // V0
+					{
+						t0 = one;
+					}
+					else  // E01
+					{
+						t0 = -b0 / a00;
+					}
+				}
+				else
+				{
+					t0 = zero;
+					if (b1 >= zero)  // V0
+					{
+						t1 = zero;
+					}
+					else if (-b1 >= a11)  // V2
+					{
+						t1 = one;
+					}
+					else  // E20
+					{
+						t1 = -b1 / a11;
+					}
+				}
+			}
+			else  // region 3
+			{
+				t0 = zero;
+				if (b1 >= zero)  // V0
+				{
+					t1 = zero;
+				}
+				else if (-b1 >= a11)  // V2
+				{
+					t1 = one;
+				}
+				else  // E20
+				{
+					t1 = -b1 / a11;
+				}
+			}
+		}
+		else if (t1 < zero)  // region 5
+		{
+			t1 = zero;
+			if (b0 >= zero)  // V0
+			{
+				t0 = zero;
+			}
+			else if (-b0 >= a00)  // V1
+			{
+				t0 = one;
+			}
+			else  // E01
+			{
+				t0 = -b0 / a00;
+			}
+		}
+		else  // region 0, interior
+		{
+			float invDet = one / det;
+			t0 *= invDet;
+			t1 *= invDet;
+		}
+	}
+	else
+	{
+		float tmp0, tmp1, numer, denom;
+
+		if (t0 < zero)  // region 2
+		{
+			tmp0 = a01 + b0;
+			tmp1 = a11 + b1;
+			if (tmp1 > tmp0)
+			{
+				numer = tmp1 - tmp0;
+				denom = a00 - ((float)2)*a01 + a11;
+				if (numer >= denom)  // V1
+				{
+					t0 = one;
+					t1 = zero;
+				}
+				else  // E12
+				{
+					t0 = numer / denom;
+					t1 = one - t0;
+				}
+			}
+			else
+			{
+				t0 = zero;
+				if (tmp1 <= zero)  // V2
+				{
+					t1 = one;
+				}
+				else if (b1 >= zero)  // V0
+				{
+					t1 = zero;
+				}
+				else  // E20
+				{
+					t1 = -b1 / a11;
+				}
+			}
+		}
+		else if (t1 < zero)  // region 6
+		{
+			tmp0 = a01 + b1;
+			tmp1 = a00 + b0;
+			if (tmp1 > tmp0)
+			{
+				numer = tmp1 - tmp0;
+				denom = a00 - ((float)2)*a01 + a11;
+				if (numer >= denom)  // V2
+				{
+					t1 = one;
+					t0 = zero;
+				}
+				else  // E12
+				{
+					t1 = numer / denom;
+					t0 = one - t1;
+				}
+			}
+			else
+			{
+				t1 = zero;
+				if (tmp1 <= zero)  // V1
+				{
+					t0 = one;
+				}
+				else if (b0 >= zero)  // V0
+				{
+					t0 = zero;
+				}
+				else  // E01
+				{
+					t0 = -b0 / a00;
+				}
+			}
+		}
+		else  // region 1
+		{
+			numer = a11 + b1 - a01 - b0;
+			if (numer <= zero)  // V2
+			{
+				t0 = zero;
+				t1 = one;
+			}
+			else
+			{
+				denom = a00 - ((float)2)*a01 + a11;
+				if (numer >= denom)  // V1
+				{
+					t0 = one;
+					t1 = zero;
+				}
+				else  // 12
+				{
+					t0 = numer / denom;
+					t1 = one - t0;
+				}
+			}
+		}
+	}
+
+	barycentricCoords.x = one - t0 - t1;
+	barycentricCoords.y = t0;
+	barycentricCoords.z = t1;
+	closestPoint = a + t0 * edge0 + t1 * edge1;
+	diff = point - closestPoint;
+	float sqrDistance = glm::dot(diff, diff);
+	return sqrDistance;
+}
 
 }
 

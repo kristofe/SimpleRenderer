@@ -417,8 +417,8 @@ namespace renderlib{
                               (GLsizei)vai.sizeOfVertex,
                               vai.buffer_offset);
         GetGLError();
-        //        std::cout << "Setup " << vai.name << " Slot = "
-        //        << vai.location << std::endl;
+                std::cout << "Setup " << vai.name << " Slot = "
+                << vai.location << std::endl;
       }
 
     }
@@ -2027,17 +2027,17 @@ namespace renderlib{
   {
     GLuint handle;
     glGenTextures(1, &handle);
-  	glEnable(GL_TEXTURE_3D);
+	glEnable(GL_TEXTURE_3D);
     glBindTexture(GL_TEXTURE_3D, handle);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     //float *data = new float[n*n*n];
-  	glm::vec4 * data = new glm::vec4[n*n*n];
+	glm::vec4 * data = new glm::vec4[n*n*n];
     //float *ptr = data;
     glm::vec4 *ptr = data;
 
@@ -2050,21 +2050,26 @@ namespace renderlib{
           float dx = x - center;
           float dy = y - center;
           float dz = z - center;
+
           
-          float off = fabsf((float)PerlinNoise3D( x*frequency,
-            y*frequency, z*frequency, 5, 6, 3));
+          float off = fabsf((float)PerlinNoise3D(
+            x*frequency,
+            y*frequency,
+            z*frequency,
+            5,
+            6, 3));
           
 
-    		  float d = sqrtf(dx*dx + dy*dy + dz*dz) + off*strength;
+		  float d = sqrtf(dx*dx + dy*dy + dz*dz) + off*strength;
           float dd = d/(n*0.5f);
-    		  //Storing distance
-          //*ptr++ = dd  - r;
-          (*ptr).w = dd  - r;
-    		  //Storing normal too
-    		  (*ptr).x = dx / d;
-    		  (*ptr).y = dy / d;
-          (*ptr).z = dz / d;
-    		  *ptr++;
+		  //Storing distance
+      //*ptr++ = dd  - r;
+      (*ptr).w = dd  - r;
+		  //Storing normal too
+		  (*ptr).x = dx / d;
+		  (*ptr).y = dy / d;
+      (*ptr).z = dz / d;
+		  *ptr++;
         }
       }
       fprintf(stdout,"Slice %d of %d\n", x, n);

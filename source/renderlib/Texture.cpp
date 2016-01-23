@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "Texture.h"
 #include "glutil.h"
+#include "GLFWTime.h"
 #include "ImageUtils.h"
 
 namespace renderlib {
@@ -17,6 +18,7 @@ Texture::Texture()
   _textureProxy = std::make_shared<TextureProxy>();
   _debugMesh = nullptr;
   _debugShader = nullptr;
+  _is3D = false;
 }
   
 Texture::~Texture()
@@ -43,6 +45,14 @@ void Texture::setTextureProxy(std::shared_ptr<TextureProxy> tp)
 	if (tp != nullptr)
 	{
 	  _textureProxy = tp;
+	  if (tp->target == GL_TEXTURE_3D) 
+	  {
+		  _is3D = true;
+	  }
+	  else
+	  {
+		  _is3D = false;
+	  }
 	}
 }
   
@@ -67,15 +77,16 @@ void Texture::loadBlank()
 
 void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh)
 {
+	_is3D = true;
     GLuint handle;
     glGenTextures(1, &handle);
   	glEnable(GL_TEXTURE_3D);
     glBindTexture(GL_TEXTURE_3D, handle);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
   	glm::vec4 * data = new glm::vec4[n*n*n];
@@ -88,17 +99,21 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh)
       for (int y = 0; y < n; ++y) {
         for (int z = 0; z < n; ++z) {
           glm::vec3 p(x/dim,y/dim,z/dim);
-    		  //Storing distance
+    	  //Storing distance
           glm::vec3 closestPoint, closestNormal;
           float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
-          (*ptr).w = dist;
+		  (*ptr).w = dist;
           //(*ptr).w = glm::length(p- glm::vec3(0.5f)) - 0.3f;//radius 0.3
     		  //Storing normal too
+		  /*
           (*ptr).x = closestNormal.x;
           (*ptr).y = closestNormal.y;
           (*ptr).z = closestNormal.z;
-          //(*ptr).x = 1.0f; (*ptr).y = 0.0f; (*ptr).z = 0.0f;
-    		  *ptr++;
+		  (*ptr).x = dist; (*ptr).y = dist; (*ptr).z = dist;
+		  */
+          (*ptr).x = 0.0f; (*ptr).y = 0.0f; (*ptr).z = 0.0f;
+		  *ptr++;
+		  
         }
       }
       fprintf(stdout,"Slice %d of %d\n", x, n);
@@ -121,7 +136,7 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh)
       _textureProxy->type,
       data);
     delete[] data;
-    return handle;
+    //return handle;
 }
 /*
 void Texture::loadFile(std::string path, TextureFilterMode tfm, TextureClampMode tcm)
@@ -222,17 +237,20 @@ void Texture::loadTGA(std::string path, TextureFilterMode tfm, TextureClampMode 
 void Texture::createPyroclasticVolume(int n, float r)
 {
   _textureProxy->createPyroclasticVolume(n,r);
+  _is3D = true;
 }
   
 void Texture::createPyroclasticDistanceField(int n, float r, float strength)
 {
   _textureProxy->createPyroclasticDistanceField(n,r, strength);
+  _is3D = true;
 }
 
 void Texture::loadRaw3DData(const std::string& filename, int dx, int dy, int dz, TextureDataType textureDataType)
 {
   _path = filename;
   _textureProxy->loadRaw3DData(filename, dx, dy, dz, textureDataType);
+  _is3D = true;
 }
 
 void Texture::bindToChannel(int textureChannel)
@@ -250,6 +268,8 @@ void Texture::debugDraw()
   bindToChannel(0);
   
   _debugShader->setUniform("uTexture0",0);
+  _debugShader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
+  _debugShader->setUniform("uTimeScale", 0.5f);
   _debugMesh->drawBuffers();
 
   _debugShader->unbind();
@@ -260,36 +280,61 @@ void Texture::setupDebugData(Vector2 min, Vector2 max)
 	if (_debugShader != nullptr)
 		return;
 
-  std::stringstream fsSource;
-  fsSource
-  << "#version 150\n"
-  << "  in vec2 vUV;\n"
-  << "  out vec4 color;\n"
-  << "\n"
-  << "  uniform sampler2D uTexture0;\n"
-  << "\n"
-  << "  void main(void) {\n"
-  << "    vec3 c = texture(uTexture0, vUV).rgb;\n"
-  << "    color = vec4(c, 1.0);\n"
-  << "  }\n";
-
+	std::stringstream fsSource;
+	if (!_is3D)
+	{
+	fsSource
+		<< "#version 410\n"
+		<< "  in vec2 vUV;\n"
+		<< "  out vec4 color;\n"
+		<< "\n"
+		<< "  uniform sampler2D uTexture0;\n"
+		<< "  uniform float iGlobalTime;\n"
+		<< "  uniform float uTimeScale;\n"
+		<< "\n"
+		<< "  void main(void) {\n"
+		<< "    vec3 c = texture(uTexture0, vUV).rgb;\n"
+		<< "    color = vec4(c, 1.0);\n"
+		<< "  }\n";
+	}
+	else
+	{
+		glEnable(GL_TEXTURE_3D);
+		fsSource
+			<< "#version 410\n"
+			<< "  in vec2 vUV;\n"
+			<< "  out vec4 color;\n"
+			<< "\n"
+			<< "  uniform sampler3D uTexture0;\n"
+			<< "  uniform float iGlobalTime;\n"
+			<< "  uniform float uTimeScale;\n"
+			<< "\n"
+			<< "  void main(void) {\n"
+			<< "    float v = mod(iGlobalTime*uTimeScale,  1.0);\n"
+			<< "    vec3 tc = vec3(vUV.xy,v);\n"
+			<< "    vec3 c = texture(uTexture0, tc).aaa;\n"//WARNING:Assuming the interesting values are in the alpha channel
+			<< "    color = vec4(c, 1.0);\n"
+			<< "  }\n";
+	}
   std::stringstream vsSource;
-  vsSource 
-  << "#version 150\n"
-  << "  in vec3 position;\n"
-  << "  in vec3 normal;\n"
-  << "  in vec2 uv;\n"
-  << "  in vec4 tangent;\n"
-  << "  in vec4 color;\n"
-  << "\n"
-  << "  uniform sampler2D uTexture0;\n"
-  << "\n"
-  << "  out vec2 vUV;\n"
-  << "\n"
-  << "  void main(void) {\n"
-  << "    vUV = uv.xy;\n"
-  << "    gl_Position = vec4(position,1.0);\n"
-  << "  }\n";
+  vsSource
+	  << "#version 410\n"
+	  << "  in vec3 position;\n"
+	  << "  in vec3 normal;\n"
+	  << "  in vec2 uv;\n"
+	  << "  in vec4 tangent;\n"
+	  << "  in vec4 color;\n"
+	  << "\n"
+	  << "  out vec2 vUV;\n"
+	  << "\n"
+	  << "  void main(void) {\n"
+//	  << "    vUV = position.xy;\n"//This works as a test case.  UV's were not mapping correctly. So this was a hack
+	  << "    vUV = uv.xy;\n"
+	  << "    gl_Position = vec4(position,1.0);\n"
+	  << "  }\n";
+
+  _debugMesh = new Mesh();
+  _debugMesh->createScreenQuad(min, max);
 
   _debugShader = new Shader();
   _debugShader->registerShaderSource(vsSource.str(), ShaderType::VERTEX, "textureDebugVertShader");
@@ -297,8 +342,6 @@ void Texture::setupDebugData(Vector2 min, Vector2 max)
   _debugShader->compileShaders();
   _debugShader->linkShaders();
 
-  _debugMesh = new Mesh();
-  _debugMesh->createScreenQuad(min, max);
   _debugMesh->bindAttributesToVAO(*_debugShader);
 }
 
