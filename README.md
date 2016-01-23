@@ -1,11 +1,11 @@
-Splash
+SimpleRenderer
 ==============
 
 to generate a project to compile...
 
-0)if there isn't a cmake directory create it.
+0)if there isn't a build directory create it.
 
-1)switch to the cmake directory
+1)switch to the build directory
 
 2)
   FOR APPLE:
@@ -18,6 +18,6 @@ to generate a project to compile...
 
 3) the makefile of ide project will now be in the cmake directory
 
-4) the cmake directory should never be committed to the repo.
+4) the build directory should never be committed to the repo.
 
 
