@@ -907,7 +907,7 @@ namespace renderlib
     if(min.z)
       trans.z = -min.z;
   
-    glm::vec3 fudge(0.1);//pull geometry away from the edges
+    glm::vec3 fudge(0.25);//pull geometry away from the edges
     trans = trans + fudge;
   
     //find the longest side and scale everything so it fits into a dim of one.
@@ -922,7 +922,7 @@ namespace renderlib
       maxDim = diff.z;
     }
   
-  float fudgeFactor = 0.7f; //Pull geometry away from the edges
+  float fudgeFactor = 0.5f; //Pull geometry away from the edges
     glm::mat4 xform =  glm::scale(glm::vec3((1.0f/maxDim))*fudgeFactor);
     xform = xform * glm::translate(trans);
   
