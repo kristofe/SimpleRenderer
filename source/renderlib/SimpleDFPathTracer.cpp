@@ -81,7 +81,7 @@ void SimpleDFPathTracer::init()
   //FIXME: Need to scale mesh to fit in a 1x1x1 sized box whose coordinates
   //range [0,1]
   //_texture.createDistanceFieldFromMesh(32, testMesh);
-  _texture.createDistanceFieldFromMesh(32, modelMesh);
+  _texture.createDistanceFieldFromMesh(64, modelMesh);
   //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
 
   //_texture.loadPNG("assets/tiles.png",TextureFilterMode::LINEAR, TextureClampMode::CLAMP_TO_EDGE);

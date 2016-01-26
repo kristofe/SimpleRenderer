@@ -93,8 +93,9 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh)
   	glm::vec4 * data = new glm::vec4[n*n*n];
     glm::vec4 *ptr = data;
 
-    float center = n / 2.0f + 0.5f;
     float dim = (float)n;
+    int sliceNum =0;
+    std::mutex lock;
   
     const int numWorkers = 8;
     std::thread workers[numWorkers];
@@ -111,18 +112,20 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh)
             
             int idx = x*n*n + y*n + z;
             ptr[idx].w = dist;
-            //(*ptr).w = glm::length(p- glm::vec3(0.5f)) - 0.3f;//radius 0.3
       		  //Storing normal too
   		  /*
-            (*ptr).x = closestNormal.x;
-            (*ptr).y = closestNormal.y;
-            (*ptr).z = closestNormal.z;
-  		  (*ptr).x = dist; (*ptr).y = dist; (*ptr).z = dist;
+            ptr[idx].x = closestNormal.x;
+            ptr[idx].y = closestNormal.y;
+            ptr[idx]z = closestNormal.z;
   		  */
             ptr[idx].x = ptr[idx].y = ptr[idx].z = 0.0f;
           }
         }
-        fprintf(stdout,"Slice %d of %d\n", x, n);
+        lock.lock();
+        sliceNum++;
+        lock.unlock();
+        fprintf(stdout,"Slice %d of %d\n", sliceNum, n);
+        
       }
     };
   
