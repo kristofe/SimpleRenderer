@@ -4,10 +4,8 @@
 #ifdef __APPLE__
 	#define GLFW_INCLUDE_GLCOREARB
 #elif WIN32
-	#pragma comment(lib, "GLFW/glfw3dll.lib")
-	#pragma comment(lib, "opengl32.lib")
-	#include <GL/glew.h>
-  #include "win32_debug_buffer.h"
+  #include <GL/glew.h>
+  #include "string_util/win32_debug_buffer.h"
 #endif
 
 #include <stdlib.h>

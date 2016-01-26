@@ -318,6 +318,7 @@ inline float Mesh::getClosestPoint(
              glm::vec3& closestNormal)
 {
   int ti0, ti1, ti2;
+  ti0 = ti1 = ti2 = 0;
   glm::vec3 tmpClosestPoint,closestPointBarycentric;
   float closestDistanceSqr = 1e4;
   //loop through each triangle and store closest point and triangle (for
@@ -334,6 +335,14 @@ inline float Mesh::getClosestPoint(
       vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
       vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
 
+	  vec3 edge0 = p1 - p0;
+	  vec3 edge1 = p2 - p0;
+
+	  //Check for zero area triangle
+	  if (glm::dot(edge0, edge0) < 1e-5 || glm::dot(edge1, edge1) < 1e-5)
+	  {
+		  continue;
+	  }
       /*
       glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
       glm::vec3 diff = p - tmpPoint;

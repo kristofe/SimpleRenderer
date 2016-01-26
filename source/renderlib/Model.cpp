@@ -136,10 +136,10 @@ void Model::collapseMeshes(Mesh& mesh, std::vector<Material>& materials)
 {
   //FIXME: What if the mesh isn't indexed?
   int xformIdx = 0;
-  for(std::shared_ptr<Mesh> subMesh : _meshes)
+  for(std::shared_ptr<Mesh>& subMesh : _meshes)
   {
-    glm::mat3 xform = mat3(_transforms[xformIdx++]);
-    glm::mat3 xposeXform = glm::inverseTranspose(xform);
+    glm::mat4 xform = mat4(_transforms[xformIdx++]);
+    glm::mat4 xposeXform = glm::inverseTranspose(xform);
 
     uint32_t materialIdx = subMesh->getMaterialIndex();
     
@@ -160,13 +160,13 @@ void Model::collapseMeshes(Mesh& mesh, std::vector<Material>& materials)
       vec3 n2(normals[i2].x, normals[i2].y, normals[i2].z);
       
       //Transform the data according to the models local transform
-      p0 = p0 * xform;
-      p1 = p1 * xform;
-      p2 = p2 * xform;
+      p0 = vec3(vec4(p0,1.0) * xform);
+      p1 = vec3(vec4(p1,1.0) * xform);
+      p2 = vec3(vec4(p2,1.0) * xform);
       
-      n0 = n0 * xposeXform;
-      n1 = n1 * xposeXform;
-      n2 = n2 * xposeXform;
+      n0 = vec3(vec4(n0,1.0) * xposeXform);
+      n1 = vec3(vec4(n1,1.0) * xposeXform);
+      n2 = vec3(vec4(n2,1.0) * xposeXform);
       
       mesh.addPosition(p0);
       mesh.addPosition(p1);
@@ -177,10 +177,7 @@ void Model::collapseMeshes(Mesh& mesh, std::vector<Material>& materials)
       mesh.addNormal(n2);
       
       //TODO: How do I handle material id's???
-      //for now put them in the indices array
-      mesh.addIndex(materialIdx);
-      mesh.addIndex(materialIdx);
-      mesh.addIndex(materialIdx);
+	  //FIXME: Can't put them into indices because it breaks triangle setup etc.
       
     }
   }
@@ -189,17 +186,29 @@ void Model::collapseMeshes(Mesh& mesh, std::vector<Material>& materials)
   {
     materials.push_back(*mat);
   }
+
+  mesh.constructBuffer();
   
   
 }
 // Loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
-void Model::loadModelFromFile(std::string path, bool flipUVs)
+void Model::loadModelFromFile(std::string path, bool flipUVs, bool forDistField)
 {
   _filename = path.substr(path.find_last_of('/'), path.length());
   // Read file via ASSIMP
   Assimp::Importer importer;
   
   unsigned int flags = aiProcessPreset_TargetRealtime_Fast;
+  if (forDistField)
+  {
+	  flags = aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_ValidateDataStructure |
+		  aiProcess_RemoveRedundantMaterials | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates | aiProcess_SortByPType | aiProcess_GenSmoothNormals;
+	   //This with aiProcess_FindDegenerates and aiProcess_SortByPType will get rid of all degenerate triangles and not create lines or points.
+	  importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType::aiPrimitiveType_POINT | aiPrimitiveType::aiPrimitiveType_LINE);
+	  //Configures the #aiProcess_PretransformVertices step to normalize all vertex components into the[-1, 1] range.
+	  importer.SetPropertyInteger(AI_CONFIG_PP_PTV_NORMALIZE, 1);
+
+  }
   if (flipUVs)
   {
     flags |= aiProcess_FlipUVs;

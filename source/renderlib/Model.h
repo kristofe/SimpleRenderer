@@ -26,7 +26,10 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <assimp/mesh.h>
+#include <assimp/cimport.h>
 #include <assimp/postprocess.h>
+#include <assimp/config.h>
 namespace renderlib{
 
     //FIXME: Vao construction and vertex attrib binding should happen at the
@@ -51,7 +54,7 @@ public:
 
   virtual ~Model();
   void collapseMeshes(Mesh& mesh, std::vector<Material>& materials);
-  void loadModelFromFile(std::string path, bool flipUVs = false);
+  void loadModelFromFile(std::string path, bool flipUVs = false, bool forDistField = false);
   std::shared_ptr<Mesh> processMesh(aiMesh* mesh, const aiScene* scene);
   void processMaterials(const aiScene* scene);
   void processNode(aiNode* node, const aiScene* scene, glm::mat4 parentTransform);

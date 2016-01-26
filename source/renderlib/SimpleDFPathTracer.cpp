@@ -51,18 +51,21 @@ void SimpleDFPathTracer::init()
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
 
-  _model.loadModelFromFile("assets/models/CornellBox/CornellBox-Original.obj", true);
+  _model.loadModelFromFile("assets/models/LionessLowPoly.obj", true, true);
   Mesh modelMesh;
   std::vector<Material> materials;
   _model.collapseMeshes(modelMesh, materials);
+  modelMesh.fitIntoUnitCube();
   
   
   _mvp.identity();
+  /*
   Mesh testMesh;
   testMesh.createSphereMeshData(4, 4);
   //testMesh.createCube(Vector3(0.5f), Vector3(1.0f));
   //testMesh.createTriangle();
   testMesh.fitIntoUnitCube();
+  */
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
@@ -77,7 +80,8 @@ void SimpleDFPathTracer::init()
   
   //FIXME: Need to scale mesh to fit in a 1x1x1 sized box whose coordinates
   //range [0,1]
-  _texture.createDistanceFieldFromMesh(32, testMesh);
+  //_texture.createDistanceFieldFromMesh(32, testMesh);
+  _texture.createDistanceFieldFromMesh(32, modelMesh);
   //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
 
   //_texture.loadPNG("assets/tiles.png",TextureFilterMode::LINEAR, TextureClampMode::CLAMP_TO_EDGE);
@@ -127,7 +131,7 @@ void SimpleDFPathTracer::draw()
   _mesh->drawBuffers();
   _shader->unbind();
 
-  _texture.debugDraw();
+  //_texture.debugDraw();
   
   glEnable(GL_DEPTH_TEST);
 
