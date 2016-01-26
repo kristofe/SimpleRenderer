@@ -10,6 +10,7 @@
 #include "glutil.h"
 #include "GLFWTime.h"
 #include "ImageUtils.h"
+#include <thread>
 
 namespace renderlib {
 
@@ -94,30 +95,52 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh)
 
     float center = n / 2.0f + 0.5f;
     float dim = (float)n;
-
-    for (int x = 0; x < n; ++x) {
-      for (int y = 0; y < n; ++y) {
-        for (int z = 0; z < n; ++z) {
-          glm::vec3 p(x/dim,y/dim,z/dim);
-    	  //Storing distance
-          glm::vec3 closestPoint, closestNormal;
-          float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
-		  (*ptr).w = dist;
-          //(*ptr).w = glm::length(p- glm::vec3(0.5f)) - 0.3f;//radius 0.3
-    		  //Storing normal too
-		  /*
-          (*ptr).x = closestNormal.x;
-          (*ptr).y = closestNormal.y;
-          (*ptr).z = closestNormal.z;
-		  (*ptr).x = dist; (*ptr).y = dist; (*ptr).z = dist;
-		  */
-          (*ptr).x = 0.0f; (*ptr).y = 0.0f; (*ptr).z = 0.0f;
-		  *ptr++;
-		  
+  
+    const int numWorkers = 8;
+    std::thread workers[numWorkers];
+  
+    auto calcClosetstPoints = [&](int n0, int n1)
+    {
+      for (int x = n0; x < n1; ++x) {
+        for (int y = 0; y < n; ++y) {
+          for (int z = 0; z < n; ++z) {
+            glm::vec3 p(x/dim,y/dim,z/dim);
+      	  //Storing distance
+            glm::vec3 closestPoint, closestNormal;
+            float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
+            
+            int idx = x*n*n + y*n + z;
+            ptr[idx].w = dist;
+            //(*ptr).w = glm::length(p- glm::vec3(0.5f)) - 0.3f;//radius 0.3
+      		  //Storing normal too
+  		  /*
+            (*ptr).x = closestNormal.x;
+            (*ptr).y = closestNormal.y;
+            (*ptr).z = closestNormal.z;
+  		  (*ptr).x = dist; (*ptr).y = dist; (*ptr).z = dist;
+  		  */
+            ptr[idx].x = ptr[idx].y = ptr[idx].z = 0.0f;
+          }
         }
+        fprintf(stdout,"Slice %d of %d\n", x, n);
       }
-      fprintf(stdout,"Slice %d of %d\n", x, n);
-    }
+    };
+  
+  for(int i = 0; i < numWorkers; i++)
+  {
+    int size = n/numWorkers;
+    int n0 = i * size;
+    int n1 = n0 + size;
+    if( i == numWorkers -1)
+      n1 = n;
+    
+   fprintf(stdout,"Starting thread with x range %d - %d\n", n0, n1);
+    workers[i] = std::thread(calcClosetstPoints, n0, n1);
+  }
+  for(int i = 0; i < numWorkers; i++)
+  {
+    workers[i].join();
+  }
     _textureProxy->target = GL_TEXTURE_3D;
     _textureProxy->internalFormat = GL_RGBA;
     _textureProxy->width = n;

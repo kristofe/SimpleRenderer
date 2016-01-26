@@ -10,7 +10,7 @@ uniform vec2 iResolution;
 uniform vec4 uMouse;
 uniform sampler3D Density;
 
-#define NUMSAMPLES 1
+#define NUMSAMPLES 16
 
 #define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define WHITECOLOR vec3(.7295, .7355, .729)*0.7
