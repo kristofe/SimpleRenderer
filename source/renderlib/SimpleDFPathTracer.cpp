@@ -51,7 +51,8 @@ void SimpleDFPathTracer::init()
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
 
-  _model.loadModelFromFile("assets/models/LionessLowPoly.obj", true, true);
+  //_model.loadModelFromFile("assets/models/LionessLowPoly.obj", true, true);
+  _model.loadModelFromFile("assets/models/LionessSmooth.obj", true, true);
   Mesh modelMesh;
   std::vector<Material> materials;
   _model.collapseMeshes(modelMesh, materials);
@@ -83,8 +84,8 @@ void SimpleDFPathTracer::init()
   //_texture.createDistanceFieldFromMesh(32, testMesh);
   
   Texture tmp;
-  //_texture.createDistanceFieldFromMesh(128, modelMesh,true, "assets/lioness_df.bin");
-  _texture.loadDistanceFieldFromDisk("assets/lioness_df.bin");
+  //_texture.createDistanceFieldFromMesh(128, modelMesh,true, "assets/lioness_smooth_df_128.bin");
+  _texture.loadDistanceFieldFromDisk("assets/lioness_smooth_df_128.bin");
 
   //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
   
@@ -100,9 +101,13 @@ void SimpleDFPathTracer::update(float time)
 
 
   // Conversion from Euler angles (in radians) to Quaternion
-  vec3 EulerAngles(time*0.6, time*0.3, 0);
+  vec3 EulerAngles(0,time,  0);
   quat q = quat(EulerAngles);
   _m = glm::mat4_cast(q);
+  glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));
+  _m = _m * xm;
+
+  _mInverse = glm::inverse(_m);
   
   Matrix4 ModelviewMatrix = Matrix4::identity();
 
@@ -131,6 +136,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("iMouse", Vector2(_mousePos.x,_mousePos.y));
   _shader->setUniform("Density", 0);
   _shader->setUniform("uModelMatrix", _m);
+  _shader->setUniform("uModelInverseMatrix", _mInverse);
   
   _mesh->drawBuffers();
   _shader->unbind();

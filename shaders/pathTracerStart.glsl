@@ -5,12 +5,13 @@ in vec2 vUV;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 uniform mat4 uModelMatrix;
+uniform mat4 uModelInverseMatrix;
 uniform float iGlobalTime;
 uniform vec2 iResolution;
 uniform vec4 uMouse;
 uniform sampler3D Density;
 
-#define NUMSAMPLES 16
+#define NUMSAMPLES 1
 
 #define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define WHITECOLOR vec3(.7295, .7355, .729)*0.7
@@ -99,7 +100,7 @@ float testRayAgainstDFTexture(in vec3 pos)
   //Fixing the radius to 0.5 helps with the math
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
-  pos = mat3(uModelMatrix) * pos;
+  pos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
   vec3 localPos = pos - boxOrigin;
   
   //If I subtract box radius then anything inside will have all 3 components <0
@@ -116,7 +117,7 @@ float testRayAgainstDFTexture(in vec3 pos)
   localTexCoords = clamp(localTexCoords, 0.0, 1.0);
   //float dist = length(localTexCoords - vec3(0.5))  - 0.5;//boxRadius.x;
   
-  float dist = texture(Density, localTexCoords).a -0.05;
+  float dist = texture(Density, localTexCoords).r -0.05;
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
   //coord represents

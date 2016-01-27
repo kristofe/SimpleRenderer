@@ -38,8 +38,8 @@ public:
   void loadBlank();
   void loadDistanceFieldFromDisk( std::string const& filename);
   void createDistanceFieldFromMesh(int dim, Mesh& mesh, bool writeToFile = false, std::string const& filename = "");
-  void writeDistanceFieldToDisk(int dim, glm::vec4 * data, std::string const& filename);
-  void readDistanceFieldFromDisk(int& dim, glm::vec4** data, std::string const& filename);
+  void writeDistanceFieldToDisk(int dim, float * data, std::string const& filename);
+  void readDistanceFieldFromDisk(int& dim, float** data, std::string const& filename);
   void loadFile(std::string path, std::string directory, TextureFilterMode tfm = TextureFilterMode::LINEAR, TextureClampMode tcm = TextureClampMode::REPEAT);
   void loadFile(std::string path, TextureFilterMode tfm, TextureClampMode tcm);
   void loadPNG(std::string path, TextureFilterMode tfm, TextureClampMode tcm);

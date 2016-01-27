@@ -59,6 +59,7 @@ namespace renderlib {
     Shader* _shader;
     vmath::Matrix4 _mvp;
     glm::mat4 _m;
+    glm::mat4 _mInverse;
     vmath::Vector2 _screenDim;
     
     Model _model;
