@@ -83,8 +83,8 @@ void SimpleDFPathTracer::init()
   //_texture.createDistanceFieldFromMesh(32, testMesh);
   
   Texture tmp;
-  _texture.createDistanceFieldFromMesh(8, modelMesh,true, "assets/lioness_df.bin");
-  //_texture.loadDistanceFieldFromDisk("assets/lioness_df.bin");
+  //_texture.createDistanceFieldFromMesh(128, modelMesh,true, "assets/lioness_df.bin");
+  _texture.loadDistanceFieldFromDisk("assets/lioness_df.bin");
 
   //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
   

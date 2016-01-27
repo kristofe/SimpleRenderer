@@ -109,7 +109,7 @@ void Texture::writeDistanceFieldToDisk(int dim,
   printf("Wrote %s.\n", filename.c_str());
 }
   
-void Texture::readDistanceFieldFromDisk(int& dim, glm::vec4* data, std::string const& filename)
+void Texture::readDistanceFieldFromDisk(int& dim, glm::vec4** data, std::string const& filename)
 {
   FILE *fp = fopen(filename.c_str(), "rb");
   
@@ -129,27 +129,17 @@ void Texture::readDistanceFieldFromDisk(int& dim, glm::vec4* data, std::string c
   dim = iDim;
   
   size_t num_elems = iDim*iDim*iDim;
-	data = new glm::vec4[num_elems];
+	*data = new glm::vec4[num_elems];
   
   //read u,v,w and pressure
-  num_elems_read = fread(data, sizeof(glm::vec4), num_elems, fp);
+  num_elems_read = fread(*data, sizeof(glm::vec4), num_elems, fp);
   if (num_elems_read != num_elems)
   {
     printf("Didn't read correct number of elements to file for %s, %d expected got %d.\n",
            filename.c_str(), (int)num_elems, (int)num_elems_read);
   }
   
-  for(int x = 0; x < dim; x++)
-  {
-    for(int y = 0; y < dim; y++)
-    {
-      for(int z = 0; z < dim; z++)
-      {
-         glm::vec4 v = data[x*dim*dim + y*dim + z];
-        printf("%d %d %d => %3.4f\n", x,y,z, v.w);
-      }
-    }
-  }
+
 }
 
 void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh, bool writeToFile,
@@ -157,7 +147,7 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh, bool writeToFile,
 {
 	_is3D = true;
   GLuint handle;
-  if(!writeToFile || true)
+  if(!writeToFile)
   {
   
     glGenTextures(1, &handle);
@@ -214,7 +204,7 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh, bool writeToFile,
     if( i == numWorkers -1)
       n1 = n;
     
-   fprintf(stdout,"Starting thread with x range %d - %d\n", n0, n1);
+    fprintf(stdout,"Starting thread with x range %d - %d\n", n0, n1);
     workers[i] = std::thread(calcClosetstPoints, n0, n1);
   }
   for(int i = 0; i < numWorkers; i++)
@@ -228,7 +218,8 @@ void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh, bool writeToFile,
     writeDistanceFieldToDisk(n, data, filename);
   }
   
-  if(!writeToFile || true)
+  
+  if(!writeToFile)
   {
     _textureProxy->target = GL_TEXTURE_3D;
     _textureProxy->internalFormat = GL_RGBA;
@@ -269,8 +260,8 @@ void Texture::loadDistanceFieldFromDisk( std::string const& filename)
     glm::vec4 * data = nullptr;
     int n;
   
-    readDistanceFieldFromDisk(n,data, filename);
-    printf("read %s\n", filename.c_str());
+    readDistanceFieldFromDisk(n, &data, filename);
+    printf("read %s, dim %d\n", filename.c_str(), n);
   
     _textureProxy->target = GL_TEXTURE_3D;
     _textureProxy->internalFormat = GL_RGBA;
@@ -282,7 +273,6 @@ void Texture::loadDistanceFieldFromDisk( std::string const& filename)
     _textureProxy->pixels = nullptr;
     _textureProxy->glID = handle;
 
-  //Should go into the glUtil class... for now keep it here
     glTexImage3D(_textureProxy->target, 0,
       _textureProxy->internalFormat,
       _textureProxy->width, _textureProxy->height, _textureProxy->depth, 0,
@@ -290,8 +280,8 @@ void Texture::loadDistanceFieldFromDisk( std::string const& filename)
       _textureProxy->type,
       data);
     delete[] data;
-    //return handle;
 }
+  
 /*
 void Texture::loadFile(std::string path, TextureFilterMode tfm, TextureClampMode tcm)
 {
