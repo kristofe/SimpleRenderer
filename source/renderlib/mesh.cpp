@@ -2,6 +2,7 @@
 #include "OpenGLHelper.h"
 #include "vmath.hpp"
 #include "mesh.h"
+#include "TriangleMesh.h"
 #include "vertex.h"
 
 namespace renderlib
@@ -965,6 +966,40 @@ namespace renderlib
   
     constructBuffer();
   }
-  
+ 
+  void Mesh::convertToTriangleMesh(TriangleMesh& triMesh)
+  {
+	  if (_indices.size() > 0)
+	  {
+		  for (unsigned int i = 0; i < _indices.size() / 3; ++i)
+		  {
+			  int i0 = _indices[i * 3];
+			  int i1 = _indices[i * 3 + 1];
+			  int i2 = _indices[i * 3 + 2];
+			  //Now go through each triangle
+			  vec3 p0(_positions[i0].x, _positions[i0].y, _positions[i0].z);
+			  vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
+			  vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
+
+			  triMesh.addTriangle(p0, p1, p2);
+		  }
+	  }
+	  else
+	  {
+		  for (unsigned int i = 0; i < _positions.size() / 3; ++i)
+		  {
+			  int i0 = i * 3;
+			  int i1 = i * 3 + 1;
+			  int i2 = i * 3 + 2;
+			  //Now go through each triangle
+			  vec3 p0(_positions[i0].x, _positions[i0].y, _positions[i0].z);
+			  vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
+			  vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
+
+			  triMesh.addTriangle(p0, p1, p2);
+
+		  }
+	  }
+  }
 } //namespace renderlib
 

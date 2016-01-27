@@ -44,6 +44,7 @@ namespace renderlib{
 
   };
   */
+	class TriangleMesh;
 
 //TODO:Templatize this to handle different vertex types!
 class Mesh
@@ -186,6 +187,8 @@ public:
   float distancePointTriangleExact(
 	  glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
 	  glm::vec3& closestPoint, glm::vec3& barycentricCoords);
+
+  void convertToTriangleMesh(TriangleMesh& triMesh);
 
 
 private:
