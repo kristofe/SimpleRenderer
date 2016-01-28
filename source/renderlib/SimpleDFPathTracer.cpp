@@ -13,6 +13,7 @@
 #include "RenderManager.h"
 #include "GLFWTime.h"
 #include "ObjectIDGenerator.h"
+#include "TriangleMesh.h"
 
 //Get rid of this once we have a texture class working
 #include "OpenGLHelper.h"
@@ -57,6 +58,9 @@ void SimpleDFPathTracer::init()
   std::vector<Material> materials;
   _model.collapseMeshes(modelMesh, materials);
   modelMesh.fitIntoUnitCube();
+  
+  TriangleMesh triMesh;
+  modelMesh.convertToTriangleMesh(triMesh);
   
   
   _mvp.identity();

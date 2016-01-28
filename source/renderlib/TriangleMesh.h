@@ -52,13 +52,15 @@ namespace renderlib {
 			_triangles.push_back(t);
 		}
 
+    void calculateBoundingBox(vec3& min, vec3& max);
 
 	private:
 		DISALLOW_COPY_AND_ASSIGN(TriangleMesh);
 
 	protected:
 		std::vector<Triangle> _triangles;
-
+    glm::vec3 _min;
+    glm::vec3 _max;
 
 	};
 
