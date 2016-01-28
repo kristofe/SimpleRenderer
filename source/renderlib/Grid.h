@@ -46,11 +46,11 @@ namespace renderlib {
     void storeTriangleMesh(TriangleMesh& triMesh);
     void storeTriangle(TriangleMesh::Triangle& tri, uint32_t i);
     
-    int IX(int i, int j, int k){
+    uint32_t IX(int i, int j, int k){
       return i + (j*_n) + (k*_n*_n);
     }
     
-    int SAFE_IX(int i, int j, int k){
+    uint32_t SAFE_IX(int i, int j, int k){
       if(i < 0 || i >= _n ||
          j < 0 || j >= _n ||
          k < 0 || k >= _n
@@ -59,6 +59,8 @@ namespace renderlib {
       
       return IX(i,j,k);
     }
+    uint32_t getIndexFromPos(glm::vec3 pos);
+    glm::ivec3 getIndicesFromPos(glm::vec3 pos);
     
 	private:
     void operator=(const Grid&) = delete;

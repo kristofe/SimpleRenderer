@@ -48,6 +48,9 @@ namespace renderlib
   
   void Grid::storeTriangle(TriangleMesh::Triangle& tri, uint32_t i)
   {
+    //FIXME: TRANSFORM TRIANGLE COORDS INTO LOCAL GRID COORDS.
+    //RIGHT NOW I AM ASSUMING THE GRID IS AT THE ORIGIN
+    
     //Find the range of cells that the bounding box of this tri covers and
     //add it to those cells
     glm::vec3 extents = tri.max - tri.min;
@@ -66,7 +69,37 @@ namespace renderlib
     //By incrementing the indices from the origin indices.
   }
 
-
+  uint32_t Grid::getIndexFromPos(glm::vec3 pos)
+  {
+    glm::vec3 localPos = pos - _gridOrigin;
+	   float scale = 1.0f/_cellSize;
+    localPos *= scale;
+    int i = (int)(localPos.x);
+    int j = (int)(localPos.y);
+    int k = (int)(localPos.z);
+    
+    
+    if(i < 0 || i >= _n ||
+       j < 0 || j >= _n ||
+       k < 0 || k >= _n
+       )
+      return 0;
+    
+    return IX(i,j,k);
+  }
+  
+  glm::ivec3 Grid::getIndicesFromPos(glm::vec3 pos)
+  {
+    glm::vec3 localPos = pos - _gridOrigin;
+	   float scale = 1.0f/_cellSize;
+    localPos *= scale;
+    int i = (int)(localPos.x);
+    int j = (int)(localPos.y);
+    int k = (int)(localPos.z);
+    
+    return glm::ivec3(i,j,k);
+    
+  }
   
 } //namespace renderlib
 
