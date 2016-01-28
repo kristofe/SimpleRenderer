@@ -14,6 +14,7 @@
 #include "GLFWTime.h"
 #include "ObjectIDGenerator.h"
 #include "TriangleMesh.h"
+#include "UniformGrid.h"
 
 //Get rid of this once we have a texture class working
 #include "OpenGLHelper.h"
@@ -39,6 +40,7 @@ void SimpleDFPathTracer::resize()
 void SimpleDFPathTracer::init()
 {
   resize();
+  _mvp.identity();
   //For now just hard code some stuff in here to see if everything else works!
   _shader = new Shader();
   _shader->registerShader("shaders/passThroughVS.glsl", ShaderType::VERTEX);
@@ -51,19 +53,6 @@ void SimpleDFPathTracer::init()
   _mesh = new Mesh();
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
-
-  //_model.loadModelFromFile("assets/models/LionessLowPoly.obj", true, true);
-  _model.loadModelFromFile("assets/models/LionessSmooth.obj", true, true);
-  Mesh modelMesh;
-  std::vector<Material> materials;
-  _model.collapseMeshes(modelMesh, materials);
-  modelMesh.fitIntoUnitCube();
-  
-  TriangleMesh triMesh;
-  modelMesh.convertToTriangleMesh(triMesh);
-  
-  
-  _mvp.identity();
   /*
   Mesh testMesh;
   testMesh.createSphereMeshData(4, 4);
@@ -74,22 +63,29 @@ void SimpleDFPathTracer::init()
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
-  //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
+  const int RESOLUTION = 32;
+  char outputName[256];
+  char inputName[256];
+  const char* modelname ="LionessLowPoly";
+  sprintf(inputName, "assets/models/%s.obj", modelname);
+  sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
+
+  _model.loadModelFromFile(inputName, true, true);
+
+  Mesh modelMesh;
+  std::vector<Material> materials;
+  _model.collapseMeshes(modelMesh, materials);
+  modelMesh.fitIntoUnitCube();
   
-  //FIXME: Need to scale mesh to fit in a 1x1x1 sized box whose coordinates
-  //range [0,1]
-  //_texture.createDistanceFieldFromMesh(32, testMesh);
+  TriangleMesh triMesh;
+  modelMesh.convertToTriangleMesh(triMesh);
+  UniformGrid grid(RESOLUTION, glm::vec3(0));
+  grid.storeTriangleMesh(triMesh);
   
   Texture tmp;
-  //_texture.createDistanceFieldFromMesh(128, modelMesh,true, "assets/lioness_smooth_df_128.bin");
-  _texture.loadDistanceFieldFromDisk("assets/lioness_smooth_df_128.bin");
+  _texture.createDistanceFieldFromMesh(RESOLUTION, modelMesh,true, outputName);
+  _texture.loadDistanceFieldFromDisk(outputName);
 
   //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
   
