@@ -29,44 +29,36 @@ namespace renderlib {
 			t.p0 = p0;
 			t.p1 = p1;
 			t.p2 = p2;
-			//TODO: Calc bbox
-			/*
-			_min.x = _min.y = _min.z = 99999999.0f;
-			_max.x = _max.y = _max.z = -99999999.0f;
-			for (Vertex v : _verts)
+
+			t.min.x = t.min.y = t.min.z = 99999999.0f;
+			t.max.x = t.max.y = t.max.z = -99999999.0f;
+			std::vector<glm::vec3> verts{ t.p0, t.p1, t.p2 };
+			for (glm::vec3 v : verts)
 			{
-				if (v.position.x < _min.x)
-					_min.x = v.position.x;
-				if (v.position.y < _min.y)
-					_min.y = v.position.y;
-				if (v.position.z < _min.z)
-					_min.z = v.position.z;
+				if (v.x < t.min.x)
+					t.min.x = v.x;
+				if (v.y < t.min.y)
+					t.min.y = v.y;
+				if (v.z < t.min.z)
+					t.min.z = v.z;
 
-				if (v.position.x > _max.x)
-					_max.x = v.position.x;
-				if (v.position.y > _max.y)
-					_max.y = v.position.y;
-				if (v.position.z > _max.z)
-					_max.z = v.position.z;
+				if (v.x > t.max.x)
+					t.max.x = v.x;
+				if (v.y > t.max.y)
+					t.max.y = v.y;
+				if (v.z > t.max.z)
+					t.max.z = v.z;
 			}
-			*/
-
+			_triangles.push_back(t);
 		}
 
-		void calculateBoundingBox(vec3& min, vec3& max);
 
 	private:
 		DISALLOW_COPY_AND_ASSIGN(TriangleMesh);
-		void getBoundingBox(vec3& min, vec3& max);
 
-		//Data Members
 	protected:
-
-		std::vector<glm::vec3> _positions;
 		std::vector<Triangle> _triangles;
 
-		vec3 _min;
-		vec3 _max;
 
 	};
 
