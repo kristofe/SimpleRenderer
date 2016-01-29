@@ -42,6 +42,11 @@ namespace renderlib
   //Is there a situation where a bounding box intersects the region but another
   //one doesn't but the one that doesn't is closer?
   //The answer is yes.  But how do I overcome it?
+  //Answer:
+  //Don't use bounding boxes.  Have to do AABB-Triangle intersection so any
+  //triangle in the cell actually intersects it
+  
+  //TODO: Need AABB-Triangle intersection routine
   std::vector<uint32_t>& UniformHGrid::getTrianglesNearPosition(glm::vec3 const& pos)
 	{
     //Grids reduce resolution as you go into vector

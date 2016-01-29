@@ -93,6 +93,10 @@ namespace renderlib
 				{
 					uint32_t idx = IX(i, j, k);
 					UniformGridCell& gc = _gridCells[idx];
+  //FIXME: Here is where we do an AABB triangle intersection
+  //TODO: Need AABB-Triangle intersection routine
+  //TODO: Need AABB-Triangle intersection routine
+  //TODO: Need AABB-Triangle intersection routine
 					gc.Add(triangleIDX);
 				}
 			}
@@ -101,6 +105,8 @@ namespace renderlib
     }
     
   }
+  
+  
   /*
   void UniformGrid::storeTriangle(TriangleMeshTriangle& tri, uint32_t triangleIDX)
   {
