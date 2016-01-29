@@ -13,7 +13,7 @@ namespace renderlib
   }
 
 
-  UniformGrid::UniformGrid(int n, glm::vec3 origin){
+  UniformGrid::UniformGrid(uint32_t n, glm::vec3 origin){
     _n = n;
     _gridOrigin = origin;
     _cellSize = 1.0f/n;

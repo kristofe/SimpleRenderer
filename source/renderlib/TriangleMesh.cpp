@@ -52,7 +52,7 @@ namespace renderlib
   {
 	  int ti;
 	  glm::vec3 tmpClosestPoint, closestPointBarycentric;
-	  float closestDistanceSqr = 1e4;
+	  //float closestDistanceSqr = 1e4;
 
 	  //FIXME: Just making distance to closest point no closer than the next cell which is wrong 
 	  //if there are multiple empty cells.

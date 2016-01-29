@@ -1,5 +1,5 @@
-#ifndef RENDERLIB_GRID_H
-#define RENDERLIB_GRID_H
+#ifndef RENDERLIB_UNIFORMGRID_H
+#define RENDERLIB_UNIFORMGRID_H
 #include <stdint.h>
 #include <vector>
 #include "allmath.h"
@@ -42,7 +42,7 @@ namespace renderlib {
 	public:
 		UniformGrid();
 		
-		UniformGrid(int n, glm::vec3 origin);
+		UniformGrid(uint32_t n, glm::vec3 origin);
 		void storeTriangleMesh(TriangleMesh& triMesh);
 		//void storeTriangle(TriangleMeshTriangle& tri, uint32_t triIDX);
 		
