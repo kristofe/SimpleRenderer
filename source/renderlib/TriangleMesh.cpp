@@ -50,8 +50,7 @@ namespace renderlib
 	  glm::vec3& closestPoint,
 	  glm::vec3& closestNormal)
   {
-	  int ti0, ti1, ti2;
-	  ti0 = ti1 = ti2 = 0;
+	  int ti;
 	  glm::vec3 tmpClosestPoint, closestPointBarycentric;
 	  float closestDistanceSqr = 1e4;
 
@@ -64,6 +63,11 @@ namespace renderlib
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //FIXME: If there is no triangle in the grid cell then there won't be any test and
 	  //it won't find the closest triangle that is in another cell.
+	  //Possible solution:  Have multiple grids
+	  //Start with finest grid. if no tris in cell then go to grid with half resolution 
+	  //repeat until you hit lowest res grid or cell has tris.
+	  //You basically just construct the same grid then make another with half resolution
+	  //etc. Store them in order and traverse up when a cell returns nothing.
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -84,12 +88,11 @@ namespace renderlib
 			  closestDistanceSqr = distSqr;
 			  tmpClosestPoint = tmpPoint;
 			  closestPointBarycentric = tmpBarycentric;
+			  ti = idx;
 		  }
 	  }
 	  //Retrieve triangle from stored indices... an optimization
-	  vec3 p0(_positions[ti0].x, _positions[ti0].y, _positions[ti0].z);
-	  vec3 p1(_positions[ti1].x, _positions[ti1].y, _positions[ti1].z);
-	  vec3 p2(_positions[ti2].x, _positions[ti2].y, _positions[ti2].z);
+	  TriangleMeshTriangle& tri = _triangles[ti];
 
 	  closestNormal = glm::vec3(1,0,0);
 	  closestPoint = tmpClosestPoint;
