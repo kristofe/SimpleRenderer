@@ -20,7 +20,7 @@ namespace renderlib
     
     uint32_t currN = n;
     //Grids reduce resolution as you go into vector
-    while( currN > 2)
+    while( currN > 0)
     {
       UniformGrid grid(currN, origin);
       _grids.push_back(grid);
@@ -37,21 +37,24 @@ namespace renderlib
     }
   }
   
-  std::vector<uint32_t> UniformHGrid::getTrianglesNearPosition(glm::vec3 const& pos)
+  //BIG ASSUMPTION: That if there is anything in the grid cells searched that
+  //They will be the closest.
+  //Is there a situation where a bounding box intersects the region but another
+  //one doesn't but the one that doesn't is closer?
+  //The answer is yes.  But how do I overcome it?
+  std::vector<uint32_t>& UniformHGrid::getTrianglesNearPosition(glm::vec3 const& pos)
 	{
-    std::vector<uint32_t> results;
     //Grids reduce resolution as you go into vector
     for(UniformGrid& grid : _grids)
     {
-      std::vector<uint32_t>& r = grid.getTrianglesNearPosition(pos);
-      if(r.size() > 0)
+      std::vector<uint32_t>& results = grid.getTrianglesNearPosition(pos);
+      if(results.size() > 0)
       {
-        //Append results and break out
-        results.insert(results.end(), r.begin(), r.end());
-        break;
+        return results;
       }
     }
-    return results;
+    std::vector<uint32_t> r;
+    return r;
     
   }
 } //namespace renderlib
