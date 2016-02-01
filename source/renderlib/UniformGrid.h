@@ -19,6 +19,14 @@ namespace renderlib {
        
     }
     
+    UniformGridCell(const UniformGridCell& other)
+    {
+      triangleIDs = other.triangleIDs;
+      worldPosition = other.worldPosition;
+      gridIndices = other.gridIndices;
+      idx = other.idx;
+    }
+    
     UniformGridCell(glm::vec3 worldPos, glm::ivec3 indices, uint32_t pid)
     :worldPosition(worldPos), gridIndices(indices), idx(pid)
     {
@@ -34,6 +42,9 @@ namespace renderlib {
     {
       triangleIDs.clear();
     }
+  private:
+    void operator=(const UniformGridCell&) = delete;
+    //UniformGridCell(const UniformGridCell&) = delete;
     
   };
 	class UniformGrid
@@ -62,7 +73,7 @@ namespace renderlib {
 		uint32_t getIndexFromPos(glm::vec3 pos);
 		glm::ivec3 getIndicesFromPos(glm::vec3 pos);
 
-		std::vector<uint32_t>& getTrianglesNearPosition(glm::vec3 const& pos)
+		std::vector<uint32_t> getTrianglesNearPosition(glm::vec3 const& pos)
 		{
 			uint32_t idx = getIndexFromPos(pos);
 			return _gridCells[idx].triangleIDs;

@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "TriangleMesh.h"
 #include "vertex.h"
+#include "Collision.h"
 
 namespace renderlib
 {

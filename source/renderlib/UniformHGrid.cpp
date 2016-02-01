@@ -47,12 +47,12 @@ namespace renderlib
   //triangle in the cell actually intersects it
   
   //TODO: Need AABB-Triangle intersection routine
-  std::vector<uint32_t>& UniformHGrid::getTrianglesNearPosition(glm::vec3 const& pos)
+  std::vector<uint32_t> UniformHGrid::getTrianglesNearPosition(const glm::vec3& pos)
 	{
     //Grids reduce resolution as you go into vector
     for(UniformGrid& grid : _grids)
     {
-      std::vector<uint32_t>& results = grid.getTrianglesNearPosition(pos);
+      std::vector<uint32_t> results = grid.getTrianglesNearPosition(pos);
       if(results.size() > 0)
       {
         return results;

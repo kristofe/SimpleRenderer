@@ -15,7 +15,7 @@ namespace renderlib {
 		UniformHGrid(uint32_t n, glm::vec3 origin);
 		void storeTriangleMesh(TriangleMesh& triMesh);
 		
-    std::vector<uint32_t>& getTrianglesNearPosition(glm::vec3 const& pos);
+    std::vector<uint32_t> getTrianglesNearPosition(const glm::vec3& pos);
     
 		private:
 		void operator=(const UniformHGrid&) = delete;

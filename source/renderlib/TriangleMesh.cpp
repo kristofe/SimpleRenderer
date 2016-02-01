@@ -3,6 +3,7 @@
 #include "vmath.hpp"
 #include "TriangleMesh.h"
 #include "vertex.h"
+#include "Collision.h"
 
 namespace renderlib
 {
@@ -71,7 +72,7 @@ namespace renderlib
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	  std::vector<uint32_t>& triIndices = grid.getTrianglesNearPosition(p);
+	  std::vector<uint32_t> triIndices = grid.getTrianglesNearPosition(p);
 	  for(uint32_t idx :triIndices)
 	  {
 		  //Now go through each triangle

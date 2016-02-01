@@ -170,6 +170,11 @@ public:
   void calculateBoundingBox(vec3& min, vec3& max);
   void fitIntoUnitCube();
   void transformMesh(glm::mat4 xform);
+  float getClosestPoint(glm::vec3 p, glm::vec3& closestPoint,
+                              glm::vec3& closestNormal);
+  
+  //Moved into Collsion.h
+  /*
   inline glm::vec3 closestPointOnTriangle(const glm::vec3& p,
                                            const glm::vec3& a,
                                            const glm::vec3& b,
@@ -182,11 +187,10 @@ public:
                                 const glm::vec3 b,
                                 const glm::vec3 c);
   
-  float getClosestPoint(glm::vec3 p, glm::vec3& closestPoint,
-                              glm::vec3& closestNormal);
   float distancePointTriangleExact(
 	  glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
 	  glm::vec3& closestPoint, glm::vec3& barycentricCoords);
+   */
 
   void convertToTriangleMesh(TriangleMesh& triMesh);
 
@@ -219,7 +223,7 @@ protected:
   uint32_t _materialIndex;
 
 };
-
+/*
   inline void Mesh::interpolateNormal(glm::vec3 const& n0, glm::vec3 const& n1, glm::vec3 const& n2,
                                 glm::vec3 const& barycentricCoord,
                                 glm::vec3& interpolatedNormal)
@@ -286,7 +290,9 @@ protected:
     float w = vc * denom; 
     return a + ab * v + ac * w; // = u*a + v*b + w*c, u = va * denom = 1.0f -v -w 
   }
+  */
   
+  /*
   inline float Mesh::getSignOfDistanceToPoint(const glm::vec3 p,
                                 const glm::vec3 a,
                                 const glm::vec3 b,
@@ -346,11 +352,9 @@ inline float Mesh::getClosestPoint(
 	  {
 		  continue;
 	  }
-      /*
-      glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
-      glm::vec3 diff = p - tmpPoint;
-      float distSqr = glm::dot(diff,diff);
-	  */
+      //glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
+      //glm::vec3 diff = p - tmpPoint;
+      //float distSqr = glm::dot(diff,diff);
 	  glm::vec3 tmpPoint, tmpBarycentric;
 	  float distSqr = distancePointTriangleExact(p, p0, p1, p2, tmpPoint, tmpBarycentric);
       if(distSqr < closestDistanceSqr){
@@ -374,11 +378,9 @@ inline float Mesh::getClosestPoint(
       vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
       vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
     
-	  /*
-      glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
-      glm::vec3 diff = p - tmpPoint;
-      float distSqr = glm::dot(diff,diff);
-	  */
+      //glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
+      //glm::vec3 diff = p - tmpPoint;
+      //float distSqr = glm::dot(diff,diff);
 	  glm::vec3 tmpPoint, tmpBarycentric;
 	  float distSqr = distancePointTriangleExact(p, p0, p1, p2, tmpPoint, tmpBarycentric);
       if(distSqr < closestDistanceSqr){
@@ -402,7 +404,9 @@ inline float Mesh::getClosestPoint(
   float dist = sqrtf(closestDistanceSqr);
   return dist;
 }
+   */
 
+  /*
 inline float Mesh::distancePointTriangleExact(
 	glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
 	glm::vec3& closestPoint, glm::vec3& barycentricCoords)
@@ -605,6 +609,7 @@ inline float Mesh::distancePointTriangleExact(
 	float sqrDistance = glm::dot(diff, diff);
 	return sqrDistance;
 }
+   */
 
 }
 
