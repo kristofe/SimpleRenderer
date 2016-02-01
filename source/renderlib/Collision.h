@@ -1,4 +1,6 @@
-#pragma once
+#ifndef COLLISION_H
+#define COLLISION_H
+
 #include "allmath.h"
 
 namespace renderlib{
@@ -19,7 +21,7 @@ namespace renderlib{
 
   //Ericson, Christer (2013-05-02). Real-Time Collision Detection (Page 164).
   // Test if AABB b intersects plane p
-  bool TestAABBPlane(AABB const& b, Plane const& p)
+  static bool TestAABBPlane(AABB const& b, Plane const& p)
   {
     // These two lines not necessary with a (center, extents) AABB representation
     glm::vec3 c = (b.max + b.min) * 0.5f; // Compute AABB center
@@ -33,7 +35,7 @@ namespace renderlib{
   }
 
   //Ericson, Christer (2013-05-02). Real-Time Collision Detection (Page 171). 
-  bool TestTriangleAABB(glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c, AABB  const& aabb ) {
+  static bool TestTriangleAABB(glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c, AABB  const& aabb ) {
 
     float p0, p1, p2, r;
     
@@ -212,7 +214,7 @@ namespace renderlib{
   }
 
   
-  float distancePointTriangleExact(
+  static float distancePointTriangleExact(
     glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
     glm::vec3& closestPoint, glm::vec3& barycentricCoords)
   {
@@ -415,7 +417,7 @@ namespace renderlib{
     return sqrDistance;
   }
   
-  glm::vec3 closestPointOnTriangle(glm::vec3 const& p,
+  static glm::vec3 closestPointOnTriangle(glm::vec3 const& p,
                                    glm::vec3 const& a,
                                    glm::vec3 const& b,
                                    glm::vec3 const& c)
@@ -474,7 +476,7 @@ namespace renderlib{
     return a + ab * v + ac * w; // = u*a + v*b + w*c, u = va * denom = 1.0f -v -w
   }
   
-  float getSignOfDistanceToPoint(glm::vec3 const& p,
+  static float getSignOfDistanceToPoint(glm::vec3 const& p,
                                  glm::vec3 const& a,
                                  glm::vec3 const& b,
                                  glm::vec3 const& c)
@@ -501,3 +503,5 @@ namespace renderlib{
   }
   
 }//namespace renderlib
+
+#endif //COLLISION_H

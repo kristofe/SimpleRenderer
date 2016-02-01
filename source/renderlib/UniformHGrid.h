@@ -11,6 +11,7 @@ namespace renderlib {
 	{
 	public:
 		UniformHGrid();
+    ~UniformHGrid();
 		
 		UniformHGrid(uint32_t n, glm::vec3 origin);
 		void storeTriangleMesh(TriangleMesh& triMesh);
@@ -22,7 +23,7 @@ namespace renderlib {
 		UniformHGrid(const UniformHGrid&) = delete;
 
 		protected:
-		std::vector<UniformGrid&> _grids;
+		std::vector<UniformGrid*> _grids;
 		int _numGrids;
 		
 

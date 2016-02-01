@@ -1002,5 +1002,93 @@ namespace renderlib
 		  }
 	  }
   }
+  
+  //Expect the mesh vertices to already be transformed.  This saves a lot of
+  //calculation because this function will be called many times
+float Mesh::getClosestPoint(
+             glm::vec3 p,
+             glm::vec3& closestPoint,
+             glm::vec3& closestNormal)
+{
+  int ti0, ti1, ti2;
+  ti0 = ti1 = ti2 = 0;
+  glm::vec3 tmpClosestPoint,closestPointBarycentric;
+  float closestDistanceSqr = 1e4;
+  //loop through each triangle and store closest point and triangle (for
+  //defferred normal calculation)
+  if(_indices.size() > 0)
+  {
+    for(unsigned int i = 0; i < _indices.size()/3; ++i)
+    {
+      int i0 = _indices[i*3];
+      int i1 = _indices[i*3 + 1];
+      int i2 = _indices[i*3 + 2];
+      //Now go through each triangle
+      vec3 p0(_positions[i0].x, _positions[i0].y, _positions[i0].z);
+      vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
+      vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
+
+	  vec3 edge0 = p1 - p0;
+	  vec3 edge1 = p2 - p0;
+
+	  //Check for zero area triangle
+	  if (glm::dot(edge0, edge0) < 1e-5 || glm::dot(edge1, edge1) < 1e-5)
+	  {
+		  continue;
+	  }
+      //glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
+      //glm::vec3 diff = p - tmpPoint;
+      //float distSqr = glm::dot(diff,diff);
+	  glm::vec3 tmpPoint, tmpBarycentric;
+	  float distSqr = distancePointTriangleExact(p, p0, p1, p2, tmpPoint, tmpBarycentric);
+      if(distSqr < closestDistanceSqr){
+        closestDistanceSqr = distSqr;
+        tmpClosestPoint = tmpPoint;
+		closestPointBarycentric = tmpBarycentric;
+        ti0 = i0; ti1 = i1; ti2 = i2;
+      }
+    
+    }
+  }
+  else
+  {
+    for(unsigned int i = 0; i < _positions.size()/3; ++i)
+    {
+      int i0 = i*3;
+      int i1 = i*3 + 1;
+      int i2 = i*3 + 2;
+      //Now go through each triangle
+      vec3 p0(_positions[i0].x, _positions[i0].y, _positions[i0].z);
+      vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
+      vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
+    
+      //glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
+      //glm::vec3 diff = p - tmpPoint;
+      //float distSqr = glm::dot(diff,diff);
+	  glm::vec3 tmpPoint, tmpBarycentric;
+	  float distSqr = distancePointTriangleExact(p, p0, p1, p2, tmpPoint, tmpBarycentric);
+      if(distSqr < closestDistanceSqr){
+        closestDistanceSqr = distSqr;
+        tmpClosestPoint = tmpPoint;
+		closestPointBarycentric = tmpBarycentric;
+        ti0 = i0; ti1 = i1; ti2 = i2;
+      }
+    }
+  }
+  //Retrieve triangle from stored indices... an optimization
+  vec3 p0(_positions[ti0].x, _positions[ti0].y, _positions[ti0].z);
+  vec3 p1(_positions[ti1].x, _positions[ti1].y, _positions[ti1].z);
+  vec3 p2(_positions[ti2].x, _positions[ti2].y, _positions[ti2].z);
+  vec3 n0(_normals[ti0].x, _normals[ti0].y, _normals[ti0].z);
+  vec3 n1(_normals[ti1].x, _normals[ti1].y, _normals[ti1].z);
+  vec3 n2(_normals[ti2].x, _normals[ti2].y, _normals[ti2].z);
+  //interpolateNormal(n0, n1,n2, closestPointBarycentric,closestNormal);
+  closestNormal = n0;
+  closestPoint = tmpClosestPoint;
+  //float sign = getSignOfDistanceToPoint(p, p0,p1,p2);
+  float dist = sqrtf(closestDistanceSqr);
+  return dist;
+}
+  
 } //namespace renderlib
 

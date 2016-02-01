@@ -64,7 +64,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 32;
+  const int RESOLUTION = 64;
   char outputName[256];
   char inputName[256];
   const char* modelname ="LionessLowPoly";
