@@ -3,10 +3,12 @@
 #include <stdint.h>
 #include <vector>
 #include "allmath.h"
-#include "TriangleMesh.h"
+#include "UniformGrid.h"
 
 
 namespace renderlib {
+  class TriangleMesh;
+  
 	class UniformHGrid
 	{
 	public:
@@ -16,7 +18,7 @@ namespace renderlib {
 		UniformHGrid(uint32_t n, glm::vec3 origin);
 		void storeTriangleMesh(TriangleMesh& triMesh);
 		
-    std::vector<uint32_t> getTrianglesNearPosition(const glm::vec3& pos);
+    std::vector<uint32_t> getTrianglesNearPosition(const glm::vec3& pos) const;
     
 		private:
 		void operator=(const UniformHGrid&) = delete;

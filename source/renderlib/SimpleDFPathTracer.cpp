@@ -15,6 +15,7 @@
 #include "ObjectIDGenerator.h"
 #include "TriangleMesh.h"
 #include "UniformGrid.h"
+#include "UniformHGrid.h"
 
 //Get rid of this once we have a texture class working
 #include "OpenGLHelper.h"
@@ -79,12 +80,12 @@ void SimpleDFPathTracer::init()
   modelMesh.fitIntoUnitCube();
   
   TriangleMesh triMesh;
-  modelMesh.convertToTriangleMesh(triMesh);
-  UniformGrid grid(RESOLUTION, glm::vec3(0));
-  grid.storeTriangleMesh(triMesh);
+  std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
+  modelMesh.convertToTriangleMesh(triMesh, grid);
   
   Texture tmp;
-  _texture.createDistanceFieldFromMesh(RESOLUTION, modelMesh,true, outputName);
+  //_texture.createDistanceFieldFromMesh(RESOLUTION, modelMesh,true, outputName);
+  _texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);

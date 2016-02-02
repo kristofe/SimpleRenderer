@@ -3,10 +3,10 @@
 #include <stdint.h>
 #include <vector>
 #include "allmath.h"
-#include "TriangleMesh.h"
 
 
 namespace renderlib {
+  class TriangleMesh;
   class UniformGridCell{
   public:
     std::vector<uint32_t> triangleIDs;

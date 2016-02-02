@@ -17,12 +17,13 @@
 #include "vmath.hpp"
 #include "allmath.h"
 #include "OpenGLHelper.h"
-#include "mesh.h"
 
 namespace renderlib{
 
 using namespace vmath;
   
+class UniformHGrid;
+class TriangleMesh;
 class Mesh;
 
 class Texture
@@ -37,7 +38,7 @@ public:
   void setTextureProxy(std::shared_ptr<TextureProxy> tp);
   void loadBlank();
   void loadDistanceFieldFromDisk( std::string const& filename);
-  void createDistanceFieldFromMesh(int dim, Mesh& mesh, bool writeToFile = false, std::string const& filename = "");
+  void createDistanceFieldFromMesh(int dim, const TriangleMesh& mesh, bool writeToFile = false, std::string const& filename = "");
   void writeDistanceFieldToDisk(int dim, float * data, std::string const& filename);
   void readDistanceFieldFromDisk(int& dim, float** data, std::string const& filename);
   void loadFile(std::string path, std::string directory, TextureFilterMode tfm = TextureFilterMode::LINEAR, TextureClampMode tcm = TextureClampMode::REPEAT);

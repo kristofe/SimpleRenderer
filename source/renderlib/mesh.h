@@ -5,6 +5,7 @@
 #include <vector>
 #include "vertex.h"
 #include "renderlib/Texture.h"
+#include "UniformHGrid.h"
 
 namespace renderlib{
 
@@ -192,7 +193,7 @@ public:
 	  glm::vec3& closestPoint, glm::vec3& barycentricCoords);
    */
 
-  void convertToTriangleMesh(TriangleMesh& triMesh);
+  void convertToTriangleMesh(TriangleMesh& triMesh, std::shared_ptr<UniformHGrid> grid);
 
 
 private:

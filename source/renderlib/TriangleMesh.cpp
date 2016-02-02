@@ -1,16 +1,18 @@
 #include <cstring>
+#include <limits>
 #include "OpenGLHelper.h"
 #include "vmath.hpp"
 #include "TriangleMesh.h"
 #include "vertex.h"
 #include "Collision.h"
+#include "UniformHGrid.h"
 
 namespace renderlib
 {
   ///////////////////////////////////////////////////////////////////////////////
   // TriangleMesh Class Methods
   ///////////////////////////////////////////////////////////////////////////////
-  TriangleMesh::TriangleMesh() 
+  TriangleMesh::TriangleMesh() :_grid(nullptr)
   {
   }
 
@@ -46,19 +48,19 @@ namespace renderlib
   //Expect the mesh vertices to already be transformed.  This saves a lot of
   //calculation because this function will be called many times
   float TriangleMesh::getClosestPoint(
-	  UniformGrid& grid,
 	  glm::vec3 p,
 	  glm::vec3& closestPoint,
-	  glm::vec3& closestNormal)
+	  glm::vec3& closestNormal) const
   {
+    assert(_grid != nullptr);
+    
 	  int ti;
 	  glm::vec3 tmpClosestPoint, closestPointBarycentric;
 	  //float closestDistanceSqr = 1e4;
 
 	  //FIXME: Just making distance to closest point no closer than the next cell which is wrong 
 	  //if there are multiple empty cells.
-	  float closestDistanceSqr = grid.getCellRadius();
-	  closestDistanceSqr *= closestDistanceSqr;
+    float closestDistanceSqr = std::numeric_limits<float>::max();  //rid.getCellRadius();
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -72,11 +74,14 @@ namespace renderlib
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	  std::vector<uint32_t> triIndices = grid.getTrianglesNearPosition(p);
-	  for(uint32_t idx :triIndices)
+	  //std::vector<uint32_t> triIndices = _grid->getTrianglesNearPosition(p);
+	  //for(uint32_t idx :triIndices)
+    
+    //For now not using grid. It is broken.
+	  for(uint32_t idx : _tmpIndices)
 	  {
 		  //Now go through each triangle
-		  TriangleMeshTriangle& tri = _triangles[idx];
+		  const TriangleMeshTriangle& tri = _triangles[idx];
 
 		  /*
 		  glm::vec3 tmpPoint = closestPointOnTriangle(p,p0,p1,p2);
@@ -93,7 +98,7 @@ namespace renderlib
 		  }
 	  }
 	  //Retrieve triangle from stored indices... an optimization
-	  TriangleMeshTriangle& tri = _triangles[ti];
+	  const TriangleMeshTriangle& tri = _triangles[ti];
 
 	  closestNormal = glm::vec3(1,0,0);
 	  closestPoint = tmpClosestPoint;
@@ -101,6 +106,7 @@ namespace renderlib
 	  float dist = sqrtf(closestDistanceSqr);
 	  return dist;
   }
+  
   
 } //namespace renderlib
 

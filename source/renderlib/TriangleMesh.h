@@ -5,10 +5,11 @@
 #include <vector>
 #include "vertex.h"
 #include "renderlib/Texture.h"
-#include "UniformGrid.h"
 
 namespace renderlib {
 
+  class UniformHGrid;
+  
 	class TriangleMeshTriangle 
 	{ 
 	  public: 
@@ -60,33 +61,15 @@ namespace renderlib {
 					t.max.z = v.z;
 			}
 			_triangles.push_back(t);
+      _tmpIndices.push_back((uint32_t)_tmpIndices.size());
 		}
 
     void calculateBoundingBox(vec3& min, vec3& max);
 
-	float getClosestPoint(UniformGrid& grid, glm::vec3 p, glm::vec3& closestPoint,
-		glm::vec3& closestNormal);
-    /*
-	//TODO: These are copies from mesh.h
-	//TODO: Move the following into a GEOMETRY class as static members.  
-    glm::vec3 closestPointOnTriangle(const glm::vec3& p,
-                                           const glm::vec3& a,
-                                           const glm::vec3& b,
-                                           const glm::vec3& c);
+	float getClosestPoint(glm::vec3 p, glm::vec3& closestPoint,
+                        glm::vec3& closestNormal) const;
 
-	void interpolateNormal(glm::vec3 const& n0, glm::vec3 const& n1, glm::vec3 const& n2,
-		glm::vec3 const& barycentricCoord, glm::vec3& interpolatedNormal);
-
-	float getSignOfDistanceToPoint(const glm::vec3 p,
-		const glm::vec3 a,
-		const glm::vec3 b,
-		const glm::vec3 c);
-
-	float distancePointTriangleExact(
-		glm::vec3 const& point, glm::vec3 const& a, glm::vec3 const& b, glm::vec3 const& c,
-		glm::vec3& closestPoint, glm::vec3& barycentricCoords);
-     */
-
+    void setGrid(std::shared_ptr<UniformHGrid> grid){ _grid = grid;}
 
 	private:
 		DISALLOW_COPY_AND_ASSIGN(TriangleMesh);
@@ -95,6 +78,8 @@ namespace renderlib {
 		std::vector<TriangleMeshTriangle> _triangles;
 		glm::vec3 _min;
 		glm::vec3 _max;
+    std::shared_ptr<UniformHGrid> _grid;
+    std::vector<uint32_t> _tmpIndices;
 
 	};
   

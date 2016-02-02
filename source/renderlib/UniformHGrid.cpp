@@ -37,6 +37,8 @@ namespace renderlib
       currN *= 0.5f;
     }
     
+    _numGrids = (int)_grids.size();
+    
   }
   
   void UniformHGrid::storeTriangleMesh(TriangleMesh& triMesh)
@@ -57,7 +59,7 @@ namespace renderlib
   //triangle in the cell actually intersects it
   
   //TODO: Need AABB-Triangle intersection routine
-  std::vector<uint32_t> UniformHGrid::getTrianglesNearPosition(const glm::vec3& pos)
+  std::vector<uint32_t> UniformHGrid::getTrianglesNearPosition(const glm::vec3& pos) const
 	{
     //Grids reduce resolution as you go into vector
     for(UniformGrid* grid : _grids)

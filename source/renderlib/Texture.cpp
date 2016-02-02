@@ -10,6 +10,8 @@
 #include "glutil.h"
 #include "GLFWTime.h"
 #include "ImageUtils.h"
+#include "mesh.h"
+#include "TriangleMesh.h"
 #include <thread>
 #include <mutex>
 
@@ -142,7 +144,7 @@ void Texture::readDistanceFieldFromDisk(int& dim, float** data, std::string cons
 
 }
 
-void Texture::createDistanceFieldFromMesh(int n, Mesh& mesh, bool writeToFile,
+void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool writeToFile,
                                           std::string const& filename)
 {
 	_is3D = true;

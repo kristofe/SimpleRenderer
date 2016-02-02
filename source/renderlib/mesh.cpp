@@ -968,7 +968,7 @@ namespace renderlib
     constructBuffer();
   }
  
-  void Mesh::convertToTriangleMesh(TriangleMesh& triMesh)
+  void Mesh::convertToTriangleMesh(TriangleMesh& triMesh, std::shared_ptr<UniformHGrid> grid)
   {
 	  if (_indices.size() > 0)
 	  {
@@ -1001,6 +1001,8 @@ namespace renderlib
 
 		  }
 	  }
+    triMesh.setGrid(grid);
+    grid->storeTriangleMesh(triMesh);
   }
   
   //Expect the mesh vertices to already be transformed.  This saves a lot of
