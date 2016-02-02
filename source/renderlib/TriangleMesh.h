@@ -61,7 +61,7 @@ namespace renderlib {
 					t.max.z = v.z;
 			}
 			_triangles.push_back(t);
-      _tmpIndices.push_back((uint32_t)_tmpIndices.size());
+      _indices.push_back((uint32_t)_indices.size());
 		}
 
     void calculateBoundingBox(vec3& min, vec3& max);
@@ -79,7 +79,7 @@ namespace renderlib {
 		glm::vec3 _min;
 		glm::vec3 _max;
     std::shared_ptr<UniformHGrid> _grid;
-    std::vector<uint32_t> _tmpIndices;
+    std::vector<uint32_t> _indices;
 
 	};
   

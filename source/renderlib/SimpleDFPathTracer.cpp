@@ -54,13 +54,12 @@ void SimpleDFPathTracer::init()
   _mesh = new Mesh();
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
-  /*
-  Mesh testMesh;
-  testMesh.createSphereMeshData(4, 4);
-  //testMesh.createCube(Vector3(0.5f), Vector3(1.0f));
-  //testMesh.createTriangle();
-  testMesh.fitIntoUnitCube();
-  */
+  
+  Mesh normalMesh;
+  normalMesh.createSphereMeshData(16, 16);
+  //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
+  //normalMesh.createTriangle();
+  normalMesh.fitIntoUnitCube();
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
@@ -74,14 +73,13 @@ void SimpleDFPathTracer::init()
 
   _model.loadModelFromFile(inputName, true, true);
 
-  Mesh modelMesh;
-  std::vector<Material> materials;
-  _model.collapseMeshes(modelMesh, materials);
-  modelMesh.fitIntoUnitCube();
+  //std::vector<Material> materials;
+  //_model.collapseMeshes(normalMesh, materials);
+  //normalMesh.fitIntoUnitCube();
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
-  modelMesh.convertToTriangleMesh(triMesh, grid);
+  normalMesh.convertToTriangleMesh(triMesh, grid);
   
   Texture tmp;
   //_texture.createDistanceFieldFromMesh(RESOLUTION, modelMesh,true, outputName);

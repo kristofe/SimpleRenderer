@@ -74,11 +74,10 @@ namespace renderlib
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	  //std::vector<uint32_t> triIndices = _grid->getTrianglesNearPosition(p);
-	  //for(uint32_t idx :triIndices)
-    
+	  std::vector<uint32_t> triIndices = _grid->getTrianglesNearPosition(p);
+	  for(uint32_t idx :triIndices)
     //For now not using grid. It is broken.
-	  for(uint32_t idx : _tmpIndices)
+	  //for(uint32_t idx : _indices)
 	  {
 		  //Now go through each triangle
 		  const TriangleMeshTriangle& tri = _triangles[idx];
