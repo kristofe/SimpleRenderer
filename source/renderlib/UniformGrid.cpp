@@ -69,24 +69,33 @@ namespace renderlib
     if(cellCounts.y == 0) cellCounts.y = 1;
     if(cellCounts.z == 0) cellCounts.z = 1;
     
-		assert(cellCounts.x <= _n);
-		assert(cellCounts.y <= _n);
-		assert(cellCounts.z <= _n);
-
-
 		glm::ivec3 originIDX(
 			floor(tri.min.x / _cellSize),
 			floor(tri.min.y / _cellSize),
 			floor(tri.min.z / _cellSize)
 			);
+  
+    //Expand the coverage of the triangle to all neighbors / solves bug
+    originIDX = originIDX - glm::ivec3(1,1,1);//Move origin one cell back
+    originIDX = glm::clamp(originIDX, glm::ivec3(0), glm::ivec3(_n-1));
+    cellCounts = cellCounts + glm::ivec3(2,2,2);//Expand the bbox to neighboring cells
+    cellCounts = glm::clamp(cellCounts, glm::ivec3(0), glm::ivec3(_n));
+      
+		glm::ivec3 maxIndices = originIDX + cellCounts;
+    maxIndices = glm::clamp(maxIndices, glm::ivec3(0), glm::ivec3(_n));
 
+
+
+		assert(cellCounts.x <= _n);
+		assert(cellCounts.y <= _n);
+		assert(cellCounts.z <= _n);
+      
 		//Assertions are just for debugging now
 		assert(originIDX.x >= 0 && originIDX.x < _n);
 		assert(originIDX.y >= 0 && originIDX.y < _n);
 		assert(originIDX.z >= 0 && originIDX.z < _n);
 
 		//Check that we won't go out of bounds
-		glm::ivec3 maxIndices = originIDX + cellCounts;
 		assert(maxIndices.x <= _n);
 		assert(maxIndices.y <= _n);
 		assert(maxIndices.z <= _n);
@@ -95,14 +104,14 @@ namespace renderlib
     
 		//It should now be possible to get all of the overlapping cells
 		//By incrementing the indices from the origin indices.
-    //for (int i = originIDX.x; i < originIDX.x + cellCounts.x; i++)
-    for (int i = 0; i < _n; i++)
+    for (int i = originIDX.x; i < maxIndices.x; i++)
+    //for (int i = 0; i < _n; i++)
 		{
-    //for (int j = originIDX.y; j < originIDX.y + cellCounts.y; j++)
-      for (int j = 0; j < _n; j++)
+      for (int j = originIDX.y; j < maxIndices.y; j++)
+      //for (int j = 0; j < _n; j++)
 			{
-      //for (int k = originIDX.z; k < originIDX.z + cellCounts.z; k++)
-        for (int k = 0; k < _n; k++)
+        for (int k = originIDX.z; k < maxIndices.z; k++)
+        //for (int k = 0; k < _n; k++)
 				{
 					uint32_t idx = IX(i, j, k);
         
@@ -110,11 +119,11 @@ namespace renderlib
         
 					UniformGridCell& gc = _gridCells[idx];
         
-          AABB aabb;
-          aabb.min = gc.min;
-          aabb.max = gc.max;
+          //AABB aabb;
+          //aabb.min = gc.min;
+          //aabb.max = gc.max;
           //FIXME: THERE IS A BUG IN  TESTTRIANGLEAABB.  
-          if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb) || true)
+          //if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb) || true)
           {
   					gc.Add(triangleIDX);
           }

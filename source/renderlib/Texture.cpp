@@ -185,7 +185,6 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
       	  //Storing distance
             glm::vec3 closestPoint, closestNormal;
             float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
-            
             int idx = x*n*n + y*n + z;
             data[idx] = dist;
       		  //Storing normal too

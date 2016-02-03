@@ -220,7 +220,7 @@ vec2 rayCast( in Ray ray, in float maxT )
 {
   float t = 0.0;
   float objectID = -1.0;
-  float cutoff = 0.001;
+  float cutoff = 1e-5;
   float nextStepSize= cutoff * 2.0;
   
   for(int i = 0; i < 64; i++)
@@ -251,7 +251,7 @@ vec2 rayCast( in Ray ray, in float maxT )
 float hardshadow( in vec3 pos, in vec3 lightDir)
 {
   Ray ray = Ray(pos + lightDir*0.03, lightDir);
-  float id = rayCast(ray, 10.0).y;
+  float id = rayCast(ray, 100.0).y;
   return 1.0 - step(0.0, id);
   
 }

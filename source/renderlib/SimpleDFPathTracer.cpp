@@ -56,7 +56,7 @@ void SimpleDFPathTracer::init()
   _mesh->bindAttributesToVAO(*_shader);
   
   Mesh normalMesh;
-  //normalMesh.createSphereMeshData(8, 8);
+  //normalMesh.createSphereMeshData(32, 32);
   //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
   //normalMesh.createTriangle();
   //normalMesh.fitIntoUnitCube();
@@ -64,13 +64,14 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 16;
+  const int RESOLUTION = 64;
   char outputName[256];
   char inputName[256];
   const char* modelname ="LionessLowPoly";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
 
+  
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
