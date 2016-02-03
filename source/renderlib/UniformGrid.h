@@ -12,6 +12,8 @@ namespace renderlib {
     std::vector<uint32_t> triangleIDs;
     glm::vec3 worldPosition;
     glm::ivec3 gridIndices;
+    glm::vec3 min;
+    glm::vec3 max;
     uint32_t idx;
     
     UniformGridCell():worldPosition(glm::vec3(0)), gridIndices(glm::ivec3(0)), idx(0)
@@ -24,11 +26,13 @@ namespace renderlib {
       triangleIDs = other.triangleIDs;
       worldPosition = other.worldPosition;
       gridIndices = other.gridIndices;
+      min = other.min;
+      max = other.max;
       idx = other.idx;
     }
     
-    UniformGridCell(glm::vec3 worldPos, glm::ivec3 indices, uint32_t pid)
-    :worldPosition(worldPos), gridIndices(indices), idx(pid)
+    UniformGridCell(glm::vec3 worldPos, glm::vec3 pmin, glm::vec3 pmax, glm::ivec3 indices, uint32_t pid)
+    :worldPosition(worldPos), min(pmin), max(pmax),gridIndices(indices), idx(pid)
     {
     }
     

@@ -2,6 +2,7 @@
 #include "OpenGLHelper.h"
 #include "TriangleMesh.h"
 #include "UniformGrid.h"
+#include "Collision.h"
 
 namespace renderlib
 {
@@ -31,7 +32,10 @@ namespace renderlib
           //the grid
           //******
           glm::ivec3 indices(x,y,z);
-          UniformGridCell gc(pos + _gridOrigin, indices,IX(x,y,z));
+          glm::vec3 worldPos(pos + _gridOrigin);
+          glm::vec3 min = worldPos;
+          glm::vec3 max = min + glm::vec3(_cellSize, _cellSize, _cellSize);
+          UniformGridCell gc(worldPos, min, max, indices,IX(x,y,z));
           _gridCells.push_back(gc);
         }
       }
@@ -61,6 +65,10 @@ namespace renderlib
 			ceil(extents.y / _cellSize),
 			ceil(extents.z / _cellSize)
 			);
+    if(cellCounts.x == 0) cellCounts.x = 1;
+    if(cellCounts.y == 0) cellCounts.y = 1;
+    if(cellCounts.z == 0) cellCounts.z = 1;
+    
 		assert(cellCounts.x <= _n);
 		assert(cellCounts.y <= _n);
 		assert(cellCounts.z <= _n);
@@ -83,21 +91,33 @@ namespace renderlib
 		assert(maxIndices.y <= _n);
 		assert(maxIndices.z <= _n);
 
+    //FIXME: THERE IS A BUG IN CALCULATING THE RANGES OF INDICES
+    
 		//It should now be possible to get all of the overlapping cells
 		//By incrementing the indices from the origin indices.
-		for (int i = originIDX.x; i < originIDX.x + cellCounts.x; i++)
+    //for (int i = originIDX.x; i < originIDX.x + cellCounts.x; i++)
+    for (int i = 0; i < _n; i++)
 		{
-			for (int j = originIDX.y; j < originIDX.y + cellCounts.y; j++)
+    //for (int j = originIDX.y; j < originIDX.y + cellCounts.y; j++)
+      for (int j = 0; j < _n; j++)
 			{
-				for (int k = originIDX.z; k < originIDX.z + cellCounts.z; k++)
+      //for (int k = originIDX.z; k < originIDX.z + cellCounts.z; k++)
+        for (int k = 0; k < _n; k++)
 				{
 					uint32_t idx = IX(i, j, k);
+        
+          assert(idx < _gridCells.size());
+        
 					UniformGridCell& gc = _gridCells[idx];
-  //FIXME: Here is where we do an AABB triangle intersection
-  //TODO: Need AABB-Triangle intersection routine
-  //TODO: Need AABB-Triangle intersection routine
-  //TODO: Need AABB-Triangle intersection routine
-					gc.Add(triangleIDX);
+        
+          AABB aabb;
+          aabb.min = gc.min;
+          aabb.max = gc.max;
+          //FIXME: THERE IS A BUG IN  TESTTRIANGLEAABB.  
+          if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb) || true)
+          {
+  					gc.Add(triangleIDX);
+          }
 				}
 			}
 		}
