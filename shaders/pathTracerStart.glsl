@@ -7,6 +7,7 @@ uniform mat4 uPMatrix;
 uniform mat4 uModelMatrix;
 uniform mat4 uModelInverseMatrix;
 uniform float iGlobalTime;
+uniform float uGridResolution;
 uniform vec2 iResolution;
 uniform vec4 uMouse;
 uniform sampler3D Density;
@@ -111,13 +112,15 @@ float testRayAgainstDFTexture(in vec3 pos)
   
   //FIXME: I don't think these tex coords are correct
   //check this is correct
-  vec3 localTexCoords = (localPos+boxRadius)/(boxRadius*2.0);
+  //vec3 localTexCoords = (localPos+boxRadius)/(boxRadius*2.0);
+  vec3 localTexCoords = localPos+boxRadius;
   
   //clamp them to [0,1]
-  localTexCoords = clamp(localTexCoords, 0.0, 1.0);
-  //float dist = length(localTexCoords - vec3(0.5))  - 0.5;//boxRadius.x;
+  float cellSize = 1.0/uGridResolution;
+  //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
+  localTexCoords = clamp(localTexCoords, cellSize, 1.0 - cellSize);
   
-  float dist = texture(Density, localTexCoords).r -0.05;
+  float dist = texture(Density, localTexCoords).r - 0.5*cellSize;
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
   //coord represents
@@ -220,10 +223,11 @@ vec2 rayCast( in Ray ray, in float maxT )
 {
   float t = 0.0;
   float objectID = -1.0;
-  float cutoff = 1e-5;
+  float cutoff = 1e-6;
   float nextStepSize= cutoff * 2.0;
+  float lastStep = 0.0;
   
-  for(int i = 0; i < 64; i++)
+  for(int i = 0; i < 32; i++)
   {
     //Exit if we get close to something or if we go too far
     if(abs(nextStepSize) < cutoff || t >= maxT){
@@ -237,6 +241,7 @@ vec2 rayCast( in Ray ray, in float maxT )
     vec2 result = testRayAgainstScene( ray.origin+ray.dir*t );
     
     //result will have the distance to the closest object as its first val
+    lastStep = nextStepSize;
     nextStepSize = result.x;
     
     //save the closest object id

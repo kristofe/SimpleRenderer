@@ -128,10 +128,10 @@ namespace renderlib
 					UniformGridCell& gc = _gridCells[idx];
         
           AABB aabb;
-          aabb.min = gc.min - cellDiam;
-          aabb.max = gc.max + cellDiam;
+          aabb.min = gc.min;// - cellDiam;
+          aabb.max = gc.max;//+ cellDiam;
           //FIXME: THERE IS A BUG IN  TESTTRIANGLEAABB.  
-          if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb) || true)
+          if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb))
           {
   					gc.Add(triangleIDX);
           }

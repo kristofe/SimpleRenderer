@@ -64,6 +64,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
   const int RESOLUTION = 32;
+  _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
   const char* modelname ="LionessLowPoly";
@@ -75,6 +76,7 @@ void SimpleDFPathTracer::init()
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
   normalMesh.fitIntoUnitCube();
+  
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
@@ -129,6 +131,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("Density", 0);
   _shader->setUniform("uModelMatrix", _m);
   _shader->setUniform("uModelInverseMatrix", _mInverse);
+  _shader->setUniform("uGridResolution", _gridResolution);
   
   _mesh->drawBuffers();
   _shader->unbind();

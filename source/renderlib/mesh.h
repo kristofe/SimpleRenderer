@@ -169,7 +169,7 @@ public:
   }
   
   void calculateBoundingBox(vec3& min, vec3& max);
-  void fitIntoUnitCube();
+  void fitIntoUnitCube(bool center = false);
   void transformMesh(glm::mat4 xform);
   float getClosestPoint(glm::vec3 p, glm::vec3& closestPoint,
                               glm::vec3& closestNormal);

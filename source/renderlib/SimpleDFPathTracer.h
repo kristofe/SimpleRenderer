@@ -54,6 +54,7 @@ namespace renderlib {
   protected:
     int _renderSortValue;
     uint32_t _id;
+    float _gridResolution;
     
     Mesh* _mesh;
     Shader* _shader;

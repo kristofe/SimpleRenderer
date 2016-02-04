@@ -56,17 +56,10 @@ namespace renderlib
     
 	  int ti;
 	  glm::vec3 tmpClosestPoint, closestPointBarycentric;
-	  //float closestDistanceSqr = 1e4;
 
-	  //FIXME: Just making distance to closest point no closer than the next cell which is wrong 
-	  //if there are multiple empty cells.
     float closestDistanceSqr = std::numeric_limits<float>::max();  //rid.getCellRadius();
-	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  std::vector<uint32_t> triIndices = _grid->getTrianglesNearPosition(p);
 	  //for(uint32_t idx :triIndices)
-    //For now not using grid. It is broken.
 	  for(uint32_t idx : _indices)
 	  {
 		  //Now go through each triangle
@@ -95,10 +88,7 @@ namespace renderlib
 	  closestPoint = tmpClosestPoint;
 	  //float sign = getSignOfDistanceToPoint(p, tri.p0,tri.p1,tri.p2);
     
-    //<IMPORTANT>!!!!!!!!!!!!!!!!
-    //DO NOT USE SQRTF... USE SQRT... sqrtf causes artifacts!!!!
-    float dist = sqrt(closestDistanceSqr);// * sign;
-    //</IMPORTANT>!!!!!!!!!!!!!!!!
+    float dist = sqrtf(closestDistanceSqr);// * sign;
 	  return dist;
   }
   

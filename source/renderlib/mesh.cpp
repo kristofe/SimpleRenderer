@@ -896,7 +896,7 @@ namespace renderlib
     delete[] tan1;
   }
   
-  void Mesh::fitIntoUnitCube()
+  void Mesh::fitIntoUnitCube(bool center)
   {
     vec3 min, max;
     calculateBoundingBox(min, max);
