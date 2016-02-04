@@ -44,10 +44,16 @@ namespace renderlib
   
   void UniformGrid::storeTriangleMesh(TriangleMesh& triMesh)
   {
+    printf("Storing triangle mesh\n");
     uint32_t triangleIDX = 0;
     std::vector<TriangleMeshTriangle>& tris = triMesh.getTriangleVector();
+    uint32_t triCount = (uint32_t)tris.size();
     for(TriangleMeshTriangle& tri : tris)
     {
+      if(triangleIDX % 100 == 0)
+      {
+        printf("Processing triangle %d of %d\n", triangleIDX, triCount);
+      }
       //storeTriangle(tri, i);
 	  //FIXME: TRANSFORM TRIANGLE COORDS INTO LOCAL GRID COORDS.
 	  //RIGHT NOW I AM ASSUMING THE GRID IS AT THE ORIGIN
@@ -100,6 +106,8 @@ namespace renderlib
 		assert(maxIndices.y <= _n);
 		assert(maxIndices.z <= _n);
 
+      
+    glm::vec3 cellDiam(_cellSize,_cellSize,_cellSize);
     //FIXME: THERE IS A BUG IN CALCULATING THE RANGES OF INDICES
     
 		//It should now be possible to get all of the overlapping cells
@@ -119,11 +127,11 @@ namespace renderlib
         
 					UniformGridCell& gc = _gridCells[idx];
         
-          //AABB aabb;
-          //aabb.min = gc.min;
-          //aabb.max = gc.max;
+          AABB aabb;
+          aabb.min = gc.min - cellDiam;
+          aabb.max = gc.max + cellDiam;
           //FIXME: THERE IS A BUG IN  TESTTRIANGLEAABB.  
-          //if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb) || true)
+          if(TestTriangleAABB(tri.p0, tri.p1, tri.p2, aabb) || true)
           {
   					gc.Add(triangleIDX);
           }

@@ -47,7 +47,6 @@ void SimpleDFPathTracer::init()
   _shader->registerShader("shaders/passThroughVS.glsl", ShaderType::VERTEX);
   //_shader->registerShader("shaders/pathTracer.glsl", ShaderType::FRAGMENT);
   _shader->registerShader("shaders/pathTracerStart.glsl", ShaderType::FRAGMENT);
-  //_shader->registerShader("shaders/dfCubesFrag.glsl", ShaderType::FRAGMENT);
   _shader->compileShaders();
   _shader->linkShaders();
 
@@ -64,7 +63,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 64;
+  const int RESOLUTION = 32;
   char outputName[256];
   char inputName[256];
   const char* modelname ="LionessLowPoly";
@@ -81,17 +80,11 @@ void SimpleDFPathTracer::init()
   std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  Texture tmp;
-  //_texture.createDistanceFieldFromMesh(RESOLUTION, modelMesh,true, outputName);
   _texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
-  //_texture.createPyroclasticDistanceField(64, 0.5f, 0.0f);
   
-  //_texture.loadPNG("assets/tiles.png",TextureFilterMode::LINEAR, TextureClampMode::CLAMP_TO_EDGE);
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
-  //_renderTexture.setupFBO(1024,1024,true, GL_RGBA8, GL_RGBA,TextureDataType::TDT_UBYTE);
-  //_renderTexture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
 }
 
