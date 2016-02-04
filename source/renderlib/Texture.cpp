@@ -169,6 +169,9 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
     int sliceNum =0;
     std::mutex lock;
   
+  float cellRadius = 0.5f/dim;
+  glm::vec3 offset(cellRadius,cellRadius,cellRadius);
+  
     unsigned numWorkers = 4;
 	unsigned concurentThreadsSupported = std::thread::hardware_concurrency();
 	if (concurentThreadsSupported > numWorkers)
@@ -184,6 +187,7 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
             glm::vec3 p(x/dim,y/dim,z/dim);
       	  //Storing distance
             glm::vec3 closestPoint, closestNormal;
+            p = p + offset;
             float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
             int idx = x*n*n + y*n + z;
             data[idx] = dist;

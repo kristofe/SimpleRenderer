@@ -101,8 +101,8 @@ float testRayAgainstDFTexture(in vec3 pos)
   //Fixing the radius to 0.5 helps with the math
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
-  pos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
-  vec3 localPos = pos - boxOrigin;
+  vec3 invpos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
+  vec3 localPos = invpos - boxOrigin;
   
   //If I subtract box radius then anything inside will have all 3 components <0
   //vec3 test3 = distPerAxis - boxRadius;
@@ -118,14 +118,14 @@ float testRayAgainstDFTexture(in vec3 pos)
   //clamp them to [0,1]
   float cellSize = 1.0/uGridResolution;
   //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
-  localTexCoords = clamp(localTexCoords, cellSize, 1.0 - cellSize);
+  localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
   
-  float dist = texture(Density, localTexCoords).r - 0.5*cellSize;
+  float dist = texture(Density, localTexCoords).r - 0.75*cellSize;
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
   //coord represents
-  vec3 samplePos = localTexCoords - boxRadius;
-  dist = dist + length(pos - samplePos);
+  vec3 samplePos = localTexCoords - boxRadius + boxOrigin;
+  dist = dist + length(invpos - samplePos);
   
   return dist;
 }
@@ -225,12 +225,12 @@ vec2 rayCast( in Ray ray, in float maxT )
   float objectID = -1.0;
   float cutoff = 1e-6;
   float nextStepSize= cutoff * 2.0;
-  float lastStep = 0.0;
   
   for(int i = 0; i < 32; i++)
   {
     //Exit if we get close to something or if we go too far
-    if(abs(nextStepSize) < cutoff || t >= maxT){
+    if(abs(nextStepSize) <= cutoff || t >= maxT)
+    {
       //If we went too far force a result that intersected nothing
       if(t > maxT)
         objectID = -1.0;
@@ -241,7 +241,6 @@ vec2 rayCast( in Ray ray, in float maxT )
     vec2 result = testRayAgainstScene( ray.origin+ray.dir*t );
     
     //result will have the distance to the closest object as its first val
-    lastStep = nextStepSize;
     nextStepSize = result.x;
     
     //save the closest object id
@@ -265,7 +264,7 @@ vec3 calculateColor(in Ray ray, in Light light)
 {
   const float maxObjectID = 6.0;
   vec3 color = vec3(0.0);
-  vec2 result = rayCast(ray,20.0);
+  vec2 result = rayCast(ray,100.0);
   vec3 pos = ray.origin + result.x*ray.dir;
   float objectID = result.y;
   

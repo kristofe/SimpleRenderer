@@ -86,9 +86,9 @@ namespace renderlib
 
 	  closestNormal = glm::vec3(1,0,0);
 	  closestPoint = tmpClosestPoint;
-	  //float sign = getSignOfDistanceToPoint(p, tri.p0,tri.p1,tri.p2);
-    
-    float dist = sqrtf(closestDistanceSqr);// * sign;
+  //float sign = getSignOfDistanceToPoint(p, tri.p0,tri.p1,tri.p2);
+  
+    float dist = sqrtf(closestDistanceSqr);
 	  return dist;
   }
   

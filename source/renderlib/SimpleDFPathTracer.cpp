@@ -57,26 +57,27 @@ void SimpleDFPathTracer::init()
   Mesh normalMesh;
   //normalMesh.createSphereMeshData(32, 32);
   //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
-  //normalMesh.createTriangle();
-  //normalMesh.fitIntoUnitCube();
+  normalMesh.createTriangle();
+  normalMesh.fitIntoUnitCube();
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 32;
+  const int RESOLUTION = 64;
   _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="LionessLowPoly";
+  const char* modelname ="Humvee50k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
 
   
+  /*
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
   normalMesh.fitIntoUnitCube();
-  
+  */
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
