@@ -63,7 +63,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 64;
+  const int RESOLUTION = 256;
   _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
@@ -77,7 +77,7 @@ void SimpleDFPathTracer::init()
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
   normalMesh.fitIntoUnitCube();
-  */
+   */
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));

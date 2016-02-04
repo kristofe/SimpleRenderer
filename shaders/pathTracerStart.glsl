@@ -226,7 +226,7 @@ vec2 rayCast( in Ray ray, in float maxT )
   float cutoff = 1e-6;
   float nextStepSize= cutoff * 2.0;
   
-  for(int i = 0; i < 32; i++)
+  for(int i = 0; i < 96; i++)
   {
     //Exit if we get close to something or if we go too far
     if(abs(nextStepSize) <= cutoff || t >= maxT)
@@ -237,7 +237,7 @@ vec2 rayCast( in Ray ray, in float maxT )
       continue;
     }
     
-    t += nextStepSize;
+    t += nextStepSize*0.5;//FIXME: This is a hack because I shoot through thin fields.
     vec2 result = testRayAgainstScene( ray.origin+ray.dir*t );
     
     //result will have the distance to the closest object as its first val
