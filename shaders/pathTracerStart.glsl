@@ -38,19 +38,6 @@ struct Ray {
   vec3 dir;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// Start attributed block
-//-----------------------------------------------------------------------------
-// The functions in this block are in some part based upon code found at:
-// Authored: Inigo Quilez
-// Date: 3/25/2013
-// Title: Raymarching Primitives
-// URL: https://www.shadertoy.com/view/Xds3zN
-// Used citing format from: http://uark.libguides.com/content.php?pid=155080&sid=1780817
-//-----------------------------------------------------------------------------
-//*************************************************************************
-//Distance functions of different kinds of primitives
-//*************************************************************************
 float dfPlane( vec3 p )
 {
   return p.y;
@@ -79,9 +66,6 @@ float dfCylinder( vec3 p, vec2 h )
   return max( length(p.xz)-h.x, abs(p.y)-h.y );
 }
 
-//*************************************************************************
-//Operations on distance fields
-//*************************************************************************
 float SubtractFields( float d1, float d2 )
 {
   return max(-d2,d1);
@@ -92,30 +76,16 @@ vec2 Union( vec2 d1, vec2 d2 )
   return (d1.x<d2.x) ? d1 : d2;
 }
 
-// End attributed block
-///////////////////////////////////////////////////////////////////////////////
 float testRayAgainstDFTexture(in vec3 pos)
 {
-  //Forcing the box to be at the origin helps with the math when getting started
+  //TODO:make these parameters
   vec3 boxOrigin = vec3(0.0, 0.0, 0.0);
-  //Fixing the radius to 0.5 helps with the math
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
   vec3 invpos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
   vec3 localPos = invpos - boxOrigin;
-  
-  //If I subtract box radius then anything inside will have all 3 components <0
-  //vec3 test3 = distPerAxis - boxRadius;
-  //float test = max(test3.x, max(test3.y, test3.z));
-  //vec3 distPerAxis = abs(localPos);
-  
-  
-  //FIXME: I don't think these tex coords are correct
-  //check this is correct
-  //vec3 localTexCoords = (localPos+boxRadius)/(boxRadius*2.0);
   vec3 localTexCoords = localPos+boxRadius;
   
-  //clamp them to [0,1]
   float cellSize = 1.0/uGridResolution;
   //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
   localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
@@ -173,20 +143,6 @@ vec2 testRayAgainstScene( in vec3 pos){
   return res;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Start attributed block
-//-----------------------------------------------------------------------------
-// The functions in this block are in some part based upon code found at:
-// Authored: Inigo Quilez
-// Date: 3/25/2013
-// Title: Raymarching Primitives
-// URL: https://www.shadertoy.com/view/Xds3zN
-// Used citing format from: http://uark.libguides.com/content.php?pid=155080&sid=1780817
-//-----------------------------------------------------------------------------
-//*************************************************************************
-//Because we are using distance fields normals are calculated using
-//finite differences of the distances at the sample point
-//*************************************************************************
 vec3 calcNormal( in vec3 pos )
 {
   vec2 offset = vec2(0.0001, 0.0);
@@ -249,8 +205,6 @@ vec2 rayCast( in Ray ray, in float maxT )
   return vec2( t, objectID );
 }
 
-// End attributed block
-///////////////////////////////////////////////////////////////////////////////
 float hardshadow( in vec3 pos, in vec3 lightDir)
 {
   Ray ray = Ray(pos + lightDir*0.03, lightDir);
@@ -318,6 +272,47 @@ float hash1() { return fract(sin(seed += 0.1)*43758.5453123); }
 vec2 hash2() { return fract(sin(vec2(seed+=0.1,seed+=0.1))*vec2(43758.5453123,22578.1459123)); }
 
 vec3 hash3() { return fract(sin(vec3(seed+=0.1,seed+=0.1,seed+=0.1))*vec3(43758.5453123,22578.1459123,19642.3490423)); }
+
+vec3 cosWeightedRandomHemisphereDirection( const vec3 n ) {
+  	vec2 r = hash2();
+    
+	vec3  uu = normalize( cross( n, vec3(0.0,1.0,1.0) ) );
+	vec3  vv = cross( uu, n );
+	
+	float ra = sqrt(r.y);
+	float rx = ra*cos(6.2831*r.x); 
+	float ry = ra*sin(6.2831*r.x);
+	float rz = sqrt( 1.0-r.y );
+	vec3  rr = vec3( rx*uu + ry*vv + rz*n );
+    
+    return normalize( rr );
+}
+
+vec3 randomSphereDirection() {
+    vec2 r = hash2()*6.2831;
+	vec3 dr=vec3(sin(r.x)*vec2(sin(r.y),cos(r.y)),cos(r.x));
+	return dr;
+}
+
+vec3 randomHemisphereDirection( const vec3 n ) {
+	vec3 dr = randomSphereDirection();
+	return dot(dr,n) * dr;
+}
+
+//-----------------------------------------------------
+// light
+//-----------------------------------------------------
+
+vec4 lightSphere;
+
+void initLightSphere( float time ) {
+	lightSphere = vec4( 3.0+2.*sin(time),2.8+2.*sin(time*0.9),3.0+4.*cos(time*0.7), .5 );
+}
+
+vec3 sampleLight( const in vec3 ro ) {
+    vec3 n = randomSphereDirection() * lightSphere.w;
+    return lightSphere.xyz + n;
+}
 
 void main( void )
 {
@@ -393,6 +388,7 @@ void main( void )
     vec2 rpof = 4.*(hash2()-vec2(0.5)) / iResolution.xy;
     vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + 3.0*ww );
 #endif
+    initLightSphere( iGlobalTime );
 
     vec3 rof = ro;
     
@@ -404,8 +400,8 @@ void main( void )
     col += calculateColor(ray, light);
     // accumulate path
     //col += rendererCalculateColor( ro, normalize(rd), numLevels );
+    seed = mod( seed*1.1234567893490423, 13. );
   }
-  //TODO: Put back
   col = col / NUMSAMPLES;
 
   // apply gamma correction
