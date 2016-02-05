@@ -55,29 +55,28 @@ void SimpleDFPathTracer::init()
   _mesh->bindAttributesToVAO(*_shader);
   
   Mesh normalMesh;
-  //normalMesh.createSphereMeshData(32, 32);
+  //normalMesh.createSphereMeshData(8, 8);
   //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
-  normalMesh.createTriangle();
-  normalMesh.fitIntoUnitCube();
+  //normalMesh.createTriangle();
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 256;
+  const int RESOLUTION = 32;
   _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="Humvee50k";
+  const char* modelname ="LionessLowPoly";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
 
   
-  /*
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
+  
   normalMesh.fitIntoUnitCube();
-   */
+  normalMesh.movePivotToBottomMiddle();
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
@@ -99,8 +98,8 @@ void SimpleDFPathTracer::update(float time)
   vec3 EulerAngles(0,time,  0);
   quat q = quat(EulerAngles);
   _m = glm::mat4_cast(q);
-  glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));
-  _m = _m * xm;
+  //glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));
+  //_m = _m * xm;
 
   _mInverse = glm::inverse(_m);
   

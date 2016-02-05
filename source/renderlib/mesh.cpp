@@ -895,12 +895,51 @@ namespace renderlib
 
     delete[] tan1;
   }
-  
-  void Mesh::fitIntoUnitCube(bool center)
+  void Mesh::movePivotToBottomMiddle()
   {
     vec3 min, max;
     calculateBoundingBox(min, max);
     //translate everything so each dim is greater than 1
+    glm::vec3 trans;
+    glm::vec3 center = (max + min);
+    center = center * glm::vec3(0.5,0.5,0.5);
+    
+    trans = glm::vec3(0.5,0.5,0.5) - center;
+    glm::mat4 xform = glm::translate(glm::vec3(trans.x,-min.y,trans.z));
+    
+    transformMesh(xform);
+    
+    //REMOVE LATER: Check that the mesh is transformed correctly
+    for(size_t i = 0; i < _positions.size(); ++i)
+    {
+      bool outOfBounds = false;
+      if(_positions[i].x < 0.0f)
+        outOfBounds = true;
+      if(_positions[i].x > 1.0f)
+        outOfBounds = true;
+      if(_positions[i].y < 0.0f)
+        outOfBounds = true;
+      if(_positions[i].y > 1.0f)
+        outOfBounds = true;
+      if(_positions[i].z < 0.0f)
+        outOfBounds = true;
+      if(_positions[i].z > 1.0f)
+        outOfBounds = true;
+      if(outOfBounds)
+      {
+        printf("Position[%d] %3.4f, %3.4f, %3.4f\n", (int)i, _positions[i].x,
+               _positions[i].y, _positions[i].z);
+      }
+    }
+    
+  }
+  
+  void Mesh::fitIntoUnitCube()
+  {
+    vec3 min, max;
+    calculateBoundingBox(min, max);
+    //translate everything so each dim is greater than 1
+    
     glm::vec3 trans;
     if( min.x < 0)
       trans.x = -min.x;
@@ -909,7 +948,7 @@ namespace renderlib
     if(min.z)
       trans.z = -min.z;
   
-    glm::vec3 fudge(0.0001);//pull geometry away from the edges
+    glm::vec3 fudge(0.000);//pull geometry away from the edges
     trans = trans + fudge;
   
     //find the longest side and scale everything so it fits into a dim of one.
@@ -924,7 +963,7 @@ namespace renderlib
       maxDim = diff.z;
     }
   
-  float fudgeFactor = 0.998f; //Pull geometry away from the edges
+  float fudgeFactor = 1.0f; //Pull geometry away from the edges
     glm::mat4 xform =  glm::scale(glm::vec3((1.0f/maxDim))*fudgeFactor);
     xform = xform * glm::translate(trans);
   

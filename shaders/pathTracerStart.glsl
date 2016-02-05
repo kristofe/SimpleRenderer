@@ -138,22 +138,21 @@ vec2 testRayAgainstScene( in vec3 pos){
   //Yes
   
   vec2 res = vec2(
-            testRayAgainstDFTexture(pos), GREENMAT
+            testRayAgainstDFTexture(pos), WHITEMAT
             );
-  
   /*
    res = Union( res, vec2(
-            dfBox(pos - vec3(0.0,0.0,0.0), vec3(0.5,0.5,0.01)), REDMAT
+            //dfBox(pos - vec3(0.0,0.0,0.0), vec3(0.5,0.5,0.5)), REDMAT
+            dfBox(pos - vec3(0.0,0.0,0.0), vec3(1,1,1)), REDMAT
             ));
-  
-  vec2 res = vec2(
-  dfCylinder( pos-vec3( 0.1,0.41,-0.0), vec2(0.2,0.4) )
-  +
-  0.08
+  res = Union(res, vec2(
+  dfCylinder( pos, vec2(0.1,0.5) )
   ,
   WHITEMAT
-  );
+  ));
+ */ 
   
+      /*
   res = Union( res, 
       vec2( dfSphere( pos-vec3(0.2,0.35,-0.5), 0.4) + 0.05 , GREENMAT)
       );
