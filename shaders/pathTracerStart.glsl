@@ -233,37 +233,6 @@ vec3 calculateColor(in Ray ray, in Light light)
   return vec3( clamp(color,0.0,1.0) );
 }
 
-
-
-/*
-//Original sphere tracing kernel
-void main( void )
-{
-  vec2 normalizedCoord = gl_FragCoord.xy/iResolution.xy;
-  
-  //Transforms the coord from [0,1] to [-1,1]
-  vec2 p = -1.0+2.0*normalizedCoord;
-  
-  Light light;
-  light.direction = normalize(vec3(0.675,1.0, 1.0));
-  light.ambient = vec4(0.1, 0.1, 0.1, 1.0);
-  
-  //making the viewpoint to be above origin and looking down
-  float focalLength = 3.0;
-  vec3 viewPoint = vec3(0.0, 2.0, focalLength);
-  vec3 rayDirection = normalize(vec3(0.5 - p.x, p.y - 1.6, -focalLength));
-  
-  Ray ray = Ray(viewPoint, rayDirection);
-  
-  vec3 color = calculateColor(ray, light);
-  
-  //apply gamma correction
-  color = sqrt( color );
-  
-  outColor = vec4( color, 1.0 );
-}
-*/
-
 //Random functions
 float seed = iGlobalTime;
 
@@ -272,47 +241,6 @@ float hash1() { return fract(sin(seed += 0.1)*43758.5453123); }
 vec2 hash2() { return fract(sin(vec2(seed+=0.1,seed+=0.1))*vec2(43758.5453123,22578.1459123)); }
 
 vec3 hash3() { return fract(sin(vec3(seed+=0.1,seed+=0.1,seed+=0.1))*vec3(43758.5453123,22578.1459123,19642.3490423)); }
-
-vec3 cosWeightedRandomHemisphereDirection( const vec3 n ) {
-  	vec2 r = hash2();
-    
-	vec3  uu = normalize( cross( n, vec3(0.0,1.0,1.0) ) );
-	vec3  vv = cross( uu, n );
-	
-	float ra = sqrt(r.y);
-	float rx = ra*cos(6.2831*r.x); 
-	float ry = ra*sin(6.2831*r.x);
-	float rz = sqrt( 1.0-r.y );
-	vec3  rr = vec3( rx*uu + ry*vv + rz*n );
-    
-    return normalize( rr );
-}
-
-vec3 randomSphereDirection() {
-    vec2 r = hash2()*6.2831;
-	vec3 dr=vec3(sin(r.x)*vec2(sin(r.y),cos(r.y)),cos(r.x));
-	return dr;
-}
-
-vec3 randomHemisphereDirection( const vec3 n ) {
-	vec3 dr = randomSphereDirection();
-	return dot(dr,n) * dr;
-}
-
-//-----------------------------------------------------
-// light
-//-----------------------------------------------------
-
-vec4 lightSphere;
-
-void initLightSphere( float time ) {
-	lightSphere = vec4( 3.0+2.*sin(time),2.8+2.*sin(time*0.9),3.0+4.*cos(time*0.7), .5 );
-}
-
-vec3 sampleLight( const in vec3 ro ) {
-    vec3 n = randomSphereDirection() * lightSphere.w;
-    return lightSphere.xyz + n;
-}
 
 void main( void )
 {

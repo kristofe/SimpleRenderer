@@ -46,7 +46,8 @@ void SimpleDFPathTracer::init()
   _shader = new Shader();
   _shader->registerShader("shaders/passThroughVS.glsl", ShaderType::VERTEX);
   //_shader->registerShader("shaders/pathTracer.glsl", ShaderType::FRAGMENT);
-  _shader->registerShader("shaders/pathTracerStart.glsl", ShaderType::FRAGMENT);
+  //_shader->registerShader("shaders/pathTracerStart.glsl", ShaderType::FRAGMENT);
+  _shader->registerShader("shaders/pathTracingSphereTracer.glsl", ShaderType::FRAGMENT);
   _shader->compileShaders();
   _shader->linkShaders();
 
