@@ -6,6 +6,7 @@
 //
 //
 
+#include <memory>
 #include "SimpleDFPathTracer.h"
 #include "mesh.h"
 #include "Texture.h"
@@ -80,10 +81,10 @@ void SimpleDFPathTracer::init()
   normalMesh.movePivotToBottomMiddle();
   
   TriangleMesh triMesh;
-  std::shared_ptr<UniformHGrid> grid = std::shared_ptr<UniformHGrid>::make_shared(RESOLUTION, glm::vec3(0));
+  std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(RESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  //_texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
+  _texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   

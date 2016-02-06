@@ -32,8 +32,10 @@ namespace renderlib {
     }
     
     UniformGridCell(glm::vec3 worldPos, glm::vec3 pmin, glm::vec3 pmax, glm::ivec3 indices, uint32_t pid)
-    :worldPosition(worldPos), min(pmin), max(pmax),gridIndices(indices), idx(pid)
+    :worldPosition(worldPos),gridIndices(indices), idx(pid)
     {
+		this->min = pmin;
+		this->max = pmax;
     }
     
     void Add(uint32_t triID)
