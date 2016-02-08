@@ -1021,7 +1021,11 @@ namespace renderlib
 			  vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
 			  vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
 
-			  triMesh.addTriangle(p0, p1, p2);
+			  vec3 n0(_normals[i0].x, _normals[i0].y, _normals[i0].z);
+			  vec3 n1(_normals[i1].x, _normals[i1].y, _normals[i1].z);
+			  vec3 n2(_normals[i2].x, _normals[i2].y, _normals[i2].z);
+
+			  triMesh.addTriangle(p0, p1, p2, n0, n1, n2);
 		  }
 	  }
 	  else
@@ -1036,7 +1040,11 @@ namespace renderlib
 			  vec3 p1(_positions[i1].x, _positions[i1].y, _positions[i1].z);
 			  vec3 p2(_positions[i2].x, _positions[i2].y, _positions[i2].z);
 
-			  triMesh.addTriangle(p0, p1, p2);
+			  vec3 n0(_normals[i0].x, _normals[i0].y, _normals[i0].z);
+			  vec3 n1(_normals[i1].x, _normals[i1].y, _normals[i1].z);
+			  vec3 n2(_normals[i2].x, _normals[i2].y, _normals[i2].z);
+
+			  triMesh.addTriangle(p0, p1, p2, n0, n1, n2);
 
 		  }
 	  }

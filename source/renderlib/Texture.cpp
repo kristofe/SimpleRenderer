@@ -80,7 +80,8 @@ void Texture::loadBlank()
 #include <stdlib.h>
 #include <stdio.h>
 void Texture::writeDistanceFieldToDisk(int dim,
-                                       float* data,
+                                       glm::vec4* data,
+                                       //float* data,
                                        std::string const& filename)
 {
   size_t num_elems = dim*dim*dim;
@@ -101,7 +102,8 @@ void Texture::writeDistanceFieldToDisk(int dim,
   fwrite(&iDim, sizeof(int32_t), 1, fp);
   //Write u,v,w and pressure
   uint32_t num_elems_written;
-  num_elems_written = fwrite(data, sizeof(float), num_elems, fp);
+  //num_elems_written = fwrite(data, sizeof(float), num_elems, fp);
+  num_elems_written = fwrite(data, sizeof(glm::vec4), num_elems, fp);
   if(num_elems_written != num_elems)
   {
     printf("Didn't write correct number of elements to file for g_u.  %d != %d\n",(int32_t)num_elems_written, (int32_t)num_elems);
@@ -112,7 +114,7 @@ void Texture::writeDistanceFieldToDisk(int dim,
   printf("Wrote %s.\n", filename.c_str());
 }
   
-void Texture::readDistanceFieldFromDisk(int& dim, float** data, std::string const& filename)
+void Texture::readDistanceFieldFromDisk(int& dim, glm::vec4** data, std::string const& filename)
 {
   FILE *fp = fopen(filename.c_str(), "rb");
   
@@ -132,9 +134,11 @@ void Texture::readDistanceFieldFromDisk(int& dim, float** data, std::string cons
   dim = iDim;
   
   size_t num_elems = iDim*iDim*iDim;
-	*data = new float[num_elems];
+	//*data = new float[num_elems];
+  *data = new glm::vec4[num_elems];
   
-  num_elems_read = fread(*data, sizeof(float), num_elems, fp);
+  //num_elems_read = fread(*data, sizeof(float), num_elems, fp);
+  num_elems_read = fread(*data, sizeof(glm::vec4), num_elems, fp);
   if (num_elems_read != num_elems)
   {
     printf("Didn't read correct number of elements to file for %s, %d expected got %d.\n",
@@ -162,8 +166,8 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   }
-  	//glm::vec4 * data = new glm::vec4[n*n*n];
-  	float * data = new float[n*n*n];
+  	glm::vec4 * data = new glm::vec4[n*n*n];
+  	//float * data = new float[n*n*n];
 
     float dim = (float)n;
     int sliceNum =0;
@@ -190,11 +194,11 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
             p = p + offset;
             float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
             int idx = x*n*n + y*n + z;
-            data[idx] = dist;
+            data[idx].w = dist;
       		  //Storing normal too
-            //data[idx].x = closestNormal.x;
-            //data[idx].y = closestNormal.y;
-            //data[idx].z = closestNormal.z;
+            data[idx].x = closestNormal.x;
+            data[idx].y = closestNormal.y;
+            data[idx].z = closestNormal.z;
              //ptr[idx].x = ptr[idx].y = ptr[idx].z = 0.0f;
           }
         }
@@ -208,12 +212,11 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
   
   for(int i = 0; i < numWorkers; i++)
   {
-    int size = n/numWorkers;
-    int n0 = i * size;
-    int n1 = n0 + size;
+    float size = n/((float)numWorkers);
+    int n0 = glm::round(i * size);
+    int n1 = glm::round((i+1) * size);
     if( i == numWorkers -1)
       n1 = n;
-    
     fprintf(stdout,"Starting thread with x range %d - %d\n", n0, n1);
     workers[i] = std::thread(calcClosetstPoints, n0, n1);
   }
@@ -234,11 +237,13 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
   if(!writeToFile)
   {
     _textureProxy->target = GL_TEXTURE_3D;
-    _textureProxy->internalFormat = GL_RED;
+    _textureProxy->internalFormat = GL_RGBA;
+    //_textureProxy->internalFormat = GL_RED;
     _textureProxy->width = n;
     _textureProxy->height = n;
     _textureProxy->depth = n;
-    _textureProxy->format = GL_RED;
+    _textureProxy->format = GL_RGBA;
+    //_textureProxy->format = GL_RED;
     _textureProxy->type = TextureDataType::TDT_FLOAT;
     _textureProxy->pixels = nullptr;
     _textureProxy->glID = handle;
@@ -269,18 +274,21 @@ void Texture::loadDistanceFieldFromDisk( std::string const& filename)
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-    float * data = nullptr;
+	glm::vec4 * data = nullptr;
+    //float * data = nullptr;
     int n;
   
     readDistanceFieldFromDisk(n, &data, filename);
     printf("read %s, dim %d\n", filename.c_str(), n);
   
     _textureProxy->target = GL_TEXTURE_3D;
-    _textureProxy->internalFormat = GL_RED;
+    _textureProxy->internalFormat = GL_RGBA;
+    //_textureProxy->internalFormat = GL_RED;
     _textureProxy->width = n;
     _textureProxy->height = n;
     _textureProxy->depth = n;
-    _textureProxy->format = GL_RED;
+    _textureProxy->format = GL_RGBA;
+    //_textureProxy->format = GL_RED;
     _textureProxy->type = TextureDataType::TDT_FLOAT;
     _textureProxy->pixels = nullptr;
     _textureProxy->glID = handle;

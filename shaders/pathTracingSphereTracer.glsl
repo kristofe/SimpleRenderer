@@ -20,7 +20,7 @@ uniform sampler3D Density;
 
 #define eps 0.0001
 #define EYEPATHLENGTH 3
-#define SAMPLES 1
+#define SAMPLES 8
 
 #define FULLBOX
 
@@ -99,7 +99,7 @@ vec2 Union( vec2 d1, vec2 d2 )
   return (d1.x<d2.x) ? d1 : d2;
 }
 
-float testRayAgainstDFTexture(in vec3 pos)
+float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
 {
   //TODO:make these parameters
   vec3 boxOrigin = vec3(0.0, 0.0, 0.0);
@@ -113,7 +113,10 @@ float testRayAgainstDFTexture(in vec3 pos)
   //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
   localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
   
-  float dist = texture(Density, localTexCoords).r - 0.75*cellSize;
+  float dist = texture(Density, localTexCoords).a - 0.75*cellSize;
+  oNormal = texture(Density, localTexCoords).rgb;
+  oNormal = mat3(uModelMatrix) * oNormal;
+  oNormal = normalize(oNormal);
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
   //coord represents
@@ -125,14 +128,16 @@ float testRayAgainstDFTexture(in vec3 pos)
 //*************************************************************************
 //the scene is just the union of all the distance fields in the world
 //*************************************************************************
-vec2 testRayAgainstScene( in vec3 pos){
+vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   //Is point inside box?
   //No? Return distance to box
   //Yes
+  float nearestT = 9e9;
   
   vec2 res = vec2(
-            testRayAgainstDFTexture(pos), WHITEMAT
+            testRayAgainstDFTexture(pos, oNormal), WHITEMAT
             );
+  nearestT = res.x;
   /*
    res = Union( res, vec2(
             //dfBox(pos - vec3(0.0,0.0,0.0), vec3(0.5,0.5,0.5)), REDMAT
@@ -163,9 +168,14 @@ vec2 testRayAgainstScene( in vec3 pos){
           )
   );*/
   res = Union( res, vec2( dfPlane(pos - vec3(-0.5)), WHITEMAT ));
+  if(res.x < nearestT)
+  {
+  	oNormal = vec3(0,1,0);
+  }
   return res;
 }
 
+/*
 vec3 calcNormal( in vec3 pos )
 {
   vec2 offset = vec2(0.0001, 0.0);
@@ -181,11 +191,12 @@ vec3 calcNormal( in vec3 pos )
   );
   return normalize(normal);
 }
+*/
 
 //*************************************************************************
 //Technically this is Sphere tracing
 //*************************************************************************
-vec2 rayCast( in Ray ray, in float maxT )
+vec2 rayCast( in Ray ray, in float maxT, out vec3 oNormal )
 {
   float t = 0.0;
   float objectID = -1.0;
@@ -204,7 +215,7 @@ vec2 rayCast( in Ray ray, in float maxT )
     }
     
     t += nextStepSize*0.5;//FIXME: This is a hack because I shoot through thin fields.
-    vec2 result = testRayAgainstScene( ray.origin+ray.dir*t );
+    vec2 result = testRayAgainstScene( ray.origin+ray.dir*t, oNormal);
     
     //result will have the distance to the closest object as its first val
     nextStepSize = result.x;
@@ -324,10 +335,12 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   ray.dir = rd;
   float maxT = 100.0;
 
-  vec2 res2 = rayCast(ray,maxT);
+  vec3 tmpNormal;
+  vec2 res2 = rayCast(ray,maxT, tmpNormal);
   if(res2.x > eps && res2.x < res.x){
     res = res2;
-    normal = calcNormal(ray.origin + (ray.dir*res.x));
+    //normal = calcNormal(ray.origin + (ray.dir*res.x));
+    normal = tmpNormal;
   }
 					  
   return res;
@@ -346,7 +359,8 @@ bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
   ray.dir = rd;
   float maxT = 100.0;
 
-  vec2 res = rayCast(ray,maxT);
+  vec3 norm;
+  vec2 res = rayCast(ray,maxT, norm);
   if(res.x > eps && res.x < dist) return true;
 
     return false; // optimisation: planes don't cast shadows in this scene

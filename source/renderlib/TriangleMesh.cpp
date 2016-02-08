@@ -83,8 +83,9 @@ namespace renderlib
 	  }
 	  //Retrieve triangle from stored indices... an optimization
 	  const TriangleMeshTriangle& tri = _triangles[ti];
+	  glm::vec3 nw = closestPointBarycentric;
 
-	  closestNormal = glm::vec3(1,0,0);
+	  closestNormal = glm::normalize(nw.x*tri.n0 + nw.y*tri.n1 + nw.z*tri.n2);
 	  closestPoint = tmpClosestPoint;
   //float sign = getSignOfDistanceToPoint(p, tri.p0,tri.p1,tri.p2);
   

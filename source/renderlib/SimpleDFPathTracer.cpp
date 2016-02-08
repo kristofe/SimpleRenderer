@@ -64,11 +64,11 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 64;
+  const int RESOLUTION = 128;
   _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="LionessLowPoly";
+  const char* modelname ="LionessSmooth";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
 

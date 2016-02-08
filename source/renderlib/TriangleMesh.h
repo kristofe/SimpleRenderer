@@ -16,6 +16,9 @@ namespace renderlib {
 		  glm::vec3 p0; 
 		  glm::vec3 p1; 
 		  glm::vec3 p2; 
+		  glm::vec3 n0; 
+		  glm::vec3 n1; 
+		  glm::vec3 n2; 
 		  glm::vec3 min; 
 		  glm::vec3 max; 
 	};
@@ -34,12 +37,17 @@ namespace renderlib {
 			_triangles.clear();
 		}
 
-		void addTriangle(glm::vec3 p0,glm::vec3 p1,glm::vec3 p2)
+		void addTriangle(
+			glm::vec3 p0,glm::vec3 p1,glm::vec3 p2,
+			glm::vec3 n0,glm::vec3 n1,glm::vec3 n2)
 		{
 			TriangleMeshTriangle t;
 			t.p0 = p0;
 			t.p1 = p1;
 			t.p2 = p2;
+			t.n0 = n0;
+			t.n1 = n1;
+			t.n2 = n2;
 
 			t.min.x = t.min.y = t.min.z = 99999999.0f;
 			t.max.x = t.max.y = t.max.z = -99999999.0f;
