@@ -14,13 +14,14 @@ uniform float iGlobalTime;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 uniform mat4 uModelMatrix;
+uniform mat4 uNormalMatrix;
 uniform mat4 uModelInverseMatrix;
 uniform float uGridResolution;
 uniform sampler3D Density;
 
 #define eps 0.0001
-#define EYEPATHLENGTH 3
-#define SAMPLES 8
+#define EYEPATHLENGTH 2
+#define SAMPLES 2
 
 #define FULLBOX
 
@@ -32,8 +33,8 @@ uniform sampler3D Density;
 
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*1.3
-//#define WHITECOLOR vec3(.7295, .7355, .729)*0.7
-#define WHITECOLOR vec3(.9999, .9999, .9999)
+#define WHITECOLOR vec3(.7295, .7355, .729)*0.7
+//#define WHITECOLOR vec3(.9999, .9999, .9999)
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
 
@@ -113,10 +114,10 @@ float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
   //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
   localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
   
-  float dist = texture(Density, localTexCoords).a - 0.75*cellSize;
-  oNormal = texture(Density, localTexCoords).rgb;
-  oNormal = mat3(uModelMatrix) * oNormal;
-  oNormal = normalize(oNormal);
+  float dist = texture(Density, localTexCoords).a - 0.9*cellSize;
+  //oNormal = texture(Density, localTexCoords).rgb;
+  //oNormal = mat3(uNormalMatrix) * oNormal;
+  //oNormal = normalize(oNormal);
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
   //coord represents
@@ -175,23 +176,24 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   return res;
 }
 
-/*
+
 vec3 calcNormal( in vec3 pos )
 {
+  vec3 ignored;
   vec2 offset = vec2(0.0001, 0.0);
   vec3 normal = vec3(
   //Finite Diff on x - axis. Remember that the test returns a vec2.
-  testRayAgainstScene(pos+offset.xyy).x-testRayAgainstScene(pos-offset.xyy).x,
+  testRayAgainstScene(pos+offset.xyy, ignored).x-testRayAgainstScene(pos-offset.xyy, ignored).x,
   
   //Finite Diff on y - axis. Remember that the test returns a vec2
-  testRayAgainstScene(pos+offset.yxy).x-testRayAgainstScene(pos-offset.yxy).x,
+  testRayAgainstScene(pos+offset.yxy, ignored).x-testRayAgainstScene(pos-offset.yxy, ignored).x,
   
   //Finite Diff on z - axis. Remember that the test returns a vec2
-  testRayAgainstScene(pos+offset.yyx).x-testRayAgainstScene(pos-offset.yyx).x
+  testRayAgainstScene(pos+offset.yyx, ignored).x-testRayAgainstScene(pos-offset.yyx, ignored).x
   );
   return normalize(normal);
 }
-*/
+
 
 //*************************************************************************
 //Technically this is Sphere tracing
@@ -339,8 +341,8 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   vec2 res2 = rayCast(ray,maxT, tmpNormal);
   if(res2.x > eps && res2.x < res.x){
     res = res2;
-    //normal = calcNormal(ray.origin + (ray.dir*res.x));
-    normal = tmpNormal;
+    normal = calcNormal(ray.origin + (ray.dir*res.x));
+    //normal = tmpNormal;
   }
 					  
   return res;
@@ -474,6 +476,7 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
         float weight = 2. * (1. - cos_a_max);
 
         tcol += (fcol * LIGHTCOLOR) * (weight * clamp(dot( nld, normal ), 0., 1.));
+        //tcol = normal;
       }
     }    
     return tcol;
@@ -497,8 +500,8 @@ void main() {
 #else
   seed = p.x + p.y * 3.43121412313;
 #endif
-  vec3 ro = vec3(0.0, 1.0, 3.00);
-  vec3 ta = vec3(0.0, -0.5,  -1.00);//target point
+  vec3 ro = vec3(0.0, 0.7, 2.00);
+  vec3 ta = vec3(0.0, -0.75,  -1.00);//target point
   //vec3 ro = vec3(2.78, 2.73, -8.00);
   //vec3 ta = vec3(2.78, 2.73,  0.00);
   vec3 ww = normalize( ta - ro );

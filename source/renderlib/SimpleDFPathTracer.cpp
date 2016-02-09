@@ -64,7 +64,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 128;
+  const int RESOLUTION = 256;
   _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
@@ -84,7 +84,7 @@ void SimpleDFPathTracer::init()
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(RESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  _texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
+  //_texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   
@@ -97,7 +97,7 @@ void SimpleDFPathTracer::update(float time)
 
 
   // Conversion from Euler angles (in radians) to Quaternion
-  vec3 EulerAngles(0,time,  0);
+  vec3 EulerAngles(0,0.2*time,  0);
   quat q = quat(EulerAngles);
   _m = glm::mat4_cast(q);
   //glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));
@@ -132,6 +132,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("iMouse", Vector2(_mousePos.x,_mousePos.y));
   _shader->setUniform("Density", 0);
   _shader->setUniform("uModelMatrix", _m);
+  _shader->setUniform("uNormalMatrix", glm::inverseTranspose( _m));
   _shader->setUniform("uModelInverseMatrix", _mInverse);
   _shader->setUniform("uGridResolution", _gridResolution);
   

@@ -76,6 +76,8 @@ namespace renderlib {
 
 	float getClosestPoint(glm::vec3 p, glm::vec3& closestPoint,
                         glm::vec3& closestNormal) const;
+	glm::vec3 interpolateNormals(const glm::vec3& barycentricCoord, 
+		const TriangleMeshTriangle& tri) const;
 
     void setGrid(std::shared_ptr<UniformHGrid> grid){ _grid = grid;}
 

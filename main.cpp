@@ -36,7 +36,7 @@
 #include "Painter.h"
 
 //These should be moved into a class 
-uvec2 windowSize{256,256};
+uvec2 windowSize{100,100};
 ivec2 windowPosition{0,0};
 ivec2 mousePosition;
 bool mouseDown{false};
@@ -201,7 +201,6 @@ void initialize()
   std::cout << GetCurrentDir() << std::endl;
   ChangeParentDir("shaders");
 
-  //windowSize = {960,1080};
   RenderManager::getInstance().setPrintFPS(true);
   RenderManager::getInstance().setPrintFPSInterval(3.0f);
   InputManager::init();

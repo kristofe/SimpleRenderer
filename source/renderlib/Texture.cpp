@@ -188,7 +188,7 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
       for (int x = n0; x < n1; ++x) {
         for (int y = 0; y < n; ++y) {
           for (int z = 0; z < n; ++z) {
-            glm::vec3 p(x/dim,y/dim,z/dim);
+            glm::vec3 p((n-x)/dim,y/dim,z/dim);
       	  //Storing distance
             glm::vec3 closestPoint, closestNormal;
             p = p + offset;
