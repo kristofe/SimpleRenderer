@@ -19,9 +19,11 @@ uniform mat4 uModelInverseMatrix;
 uniform float uGridResolution;
 uniform sampler3D Density;
 
+#define DFSCALING 0.6
 #define eps 0.0001
-#define EYEPATHLENGTH 2
-#define SAMPLES 4
+#define EYEPATHLENGTH 4
+#define SAMPLES 2
+
 
 #define FULLBOX
 
@@ -115,7 +117,7 @@ float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
   localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
   
   vec4 distField = texture(Density, localTexCoords);
-  float dist = distField.w - 0.75*cellSize;
+  float dist = distField.w - DFSCALING*cellSize;
   oNormal = distField.xyz;
   oNormal = mat3(uNormalMatrix) * oNormal;
   oNormal = normalize(oNormal);
@@ -206,7 +208,7 @@ vec2 rayCast( in Ray ray, in float maxT, out vec3 oNormal )
   float cutoff = 1e-6;
   float nextStepSize= cutoff * 2.0;
   
-  for(int i = 0; i < 96; i++)
+  for(int i = 0; i < 128; i++)
   {
     //Exit if we get close to something or if we go too far
     if(abs(nextStepSize) <= cutoff || t >= maxT)
@@ -214,10 +216,11 @@ vec2 rayCast( in Ray ray, in float maxT, out vec3 oNormal )
       //If we went too far force a result that intersected nothing
       if(t > maxT)
         objectID = -1.0;
-      continue;
+      //continue;
+      break;
     }
     
-    t += nextStepSize*0.5;//FIXME: This is a hack because I shoot through thin fields.
+    t += nextStepSize * 0.85;//FIXME: This is a hack because I shoot through thin fields.
     vec2 result = testRayAgainstScene( ray.origin+ray.dir*t, oNormal);
     
     //result will have the distance to the closest object as its first val
@@ -298,7 +301,7 @@ vec4 lightSphere;
 
 void initLightSphere( float time ) {
 	//lightSphere = vec4( 3.0+2.*sin(time),2.8+2.*sin(time*0.9),3.0+4.*cos(time*0.7), .5 );
-	lightSphere = vec4( 1.0+2.*sin(time),2.8+2.*sin(time*0.9),0.0+4.*cos(time*0.7), .5 );
+	lightSphere = vec4( 1.0+2.*sin(time),2.8+2.*sin(time*0.9),0.0+0.*cos(time*0.7), .5 );
 }
 
 vec3 sampleLight( const in vec3 ro ) {

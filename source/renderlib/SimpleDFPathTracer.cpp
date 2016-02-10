@@ -54,10 +54,6 @@ void SimpleDFPathTracer::init()
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
   
-  Mesh normalMesh;
-  //normalMesh.createSphereMeshData(8, 8);
-  //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
-  //normalMesh.createTriangle();
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
@@ -71,6 +67,10 @@ void SimpleDFPathTracer::init()
   sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
 
   
+  Mesh normalMesh;
+  //normalMesh.createSphereMeshData(8, 8);
+  //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
+  //normalMesh.createTriangle();
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
@@ -95,7 +95,7 @@ void SimpleDFPathTracer::update(float time)
 
 
   // Conversion from Euler angles (in radians) to Quaternion
-  vec3 EulerAngles(0,1.5*time,  0);
+  vec3 EulerAngles(0,time,  0);
   quat q = quat(EulerAngles);
   _m = glm::mat4_cast(q);
   //glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));
