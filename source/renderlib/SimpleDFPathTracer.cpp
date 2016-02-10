@@ -46,8 +46,6 @@ void SimpleDFPathTracer::init()
   //For now just hard code some stuff in here to see if everything else works!
   _shader = new Shader();
   _shader->registerShader("shaders/passThroughVS.glsl", ShaderType::VERTEX);
-  //_shader->registerShader("shaders/pathTracer.glsl", ShaderType::FRAGMENT);
-  //_shader->registerShader("shaders/pathTracerStart.glsl", ShaderType::FRAGMENT);
   _shader->registerShader("shaders/pathTracingSphereTracer.glsl", ShaderType::FRAGMENT);
   _shader->compileShaders();
   _shader->linkShaders();
@@ -64,7 +62,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 256;
+  const int RESOLUTION = 32;
   _gridResolution = RESOLUTION;
   char outputName[256];
   char inputName[256];
@@ -76,7 +74,7 @@ void SimpleDFPathTracer::init()
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
-  
+
   normalMesh.fitIntoUnitCube();
   normalMesh.movePivotToBottomMiddle();
   
@@ -84,7 +82,7 @@ void SimpleDFPathTracer::init()
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(RESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  //_texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
+  _texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   
@@ -97,7 +95,7 @@ void SimpleDFPathTracer::update(float time)
 
 
   // Conversion from Euler angles (in radians) to Quaternion
-  vec3 EulerAngles(0,0.2*time,  0);
+  vec3 EulerAngles(0,1.5*time,  0);
   quat q = quat(EulerAngles);
   _m = glm::mat4_cast(q);
   //glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));

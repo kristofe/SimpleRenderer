@@ -21,7 +21,7 @@ uniform sampler3D Density;
 
 #define eps 0.0001
 #define EYEPATHLENGTH 2
-#define SAMPLES 2
+#define SAMPLES 4
 
 #define FULLBOX
 
@@ -114,10 +114,11 @@ float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
   //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
   localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
   
-  float dist = texture(Density, localTexCoords).a - 0.9*cellSize;
-  //oNormal = texture(Density, localTexCoords).rgb;
-  //oNormal = mat3(uNormalMatrix) * oNormal;
-  //oNormal = normalize(oNormal);
+  vec4 distField = texture(Density, localTexCoords);
+  float dist = distField.w - 0.75*cellSize;
+  oNormal = distField.xyz;
+  oNormal = mat3(uNormalMatrix) * oNormal;
+  oNormal = normalize(oNormal);
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
   //coord represents
@@ -341,8 +342,8 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   vec2 res2 = rayCast(ray,maxT, tmpNormal);
   if(res2.x > eps && res2.x < res.x){
     res = res2;
-    normal = calcNormal(ray.origin + (ray.dir*res.x));
-    //normal = tmpNormal;
+    //normal = calcNormal(ray.origin + (ray.dir*res.x));
+    normal = tmpNormal;
   }
 					  
   return res;
@@ -476,7 +477,7 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
         float weight = 2. * (1. - cos_a_max);
 
         tcol += (fcol * LIGHTCOLOR) * (weight * clamp(dot( nld, normal ), 0., 1.));
-        //tcol = normal;
+        //tcol += normal;
       }
     }    
     return tcol;
@@ -500,10 +501,10 @@ void main() {
 #else
   seed = p.x + p.y * 3.43121412313;
 #endif
-  vec3 ro = vec3(0.0, 0.7, 2.00);
-  vec3 ta = vec3(0.0, -0.75,  -1.00);//target point
-  //vec3 ro = vec3(2.78, 2.73, -8.00);
-  //vec3 ta = vec3(2.78, 2.73,  0.00);
+  vec3 ro = vec3(0.0, 0.0, 2.00);
+  vec3 ta = vec3(0.0, 0.0,  -0.5);//target point
+  //vec3 ro = vec3(0.0, 0.7, 2.00);
+  //vec3 ta = vec3(0.0, -0.75,  -1.00);//target point
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
   vec3 vv = normalize( cross(uu,ww));
