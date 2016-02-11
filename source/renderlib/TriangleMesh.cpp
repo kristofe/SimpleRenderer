@@ -100,9 +100,9 @@ namespace renderlib
 
   {
 
-	  assert(length(tri.n0) > 0.0 && length(tri.n0) <= 1.0f);
-	  assert(length(tri.n1) > 0.0 && length(tri.n1) <= 1.0f);
-	  assert(length(tri.n2) > 0.0 && length(tri.n2) <= 1.0f);
+	  //assert(length(tri.n0) > 0.0 && length(tri.n0) <= 1.0f);
+	  //assert(length(tri.n1) > 0.0 && length(tri.n1) <= 1.0f);
+	  //assert(length(tri.n2) > 0.0 && length(tri.n2) <= 1.0f);
 
 	  glm::vec3 closestNormal;
 
@@ -118,7 +118,7 @@ namespace renderlib
 	  }
 	  */
 
-	  assert(length(closestNormal) > 0.0 && length(closestNormal) <= 1.0f);
+	 // assert(length(closestNormal) > 0.0 && length(closestNormal) <= 1.0f);
 	  return closestNormal;
   }
   

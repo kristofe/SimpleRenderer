@@ -22,7 +22,7 @@ uniform sampler3D Density;
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 4
-#define SAMPLES 2
+#define SAMPLES 4
 
 
 #define FULLBOX
