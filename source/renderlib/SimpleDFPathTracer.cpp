@@ -58,13 +58,14 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int RESOLUTION = 256;
-  _gridResolution = RESOLUTION;
+  const int DFRESOLUTION = 256;
+  _imageDim = glm::vec2(96, 96);
+  _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="LionessSmooth";
+  const char* modelname ="SoldierCommander40k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
-  sprintf(outputName, "assets/%s%d.bin", modelname, RESOLUTION);
+  sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
   
   Mesh normalMesh;
@@ -79,7 +80,7 @@ void SimpleDFPathTracer::init()
   normalMesh.movePivotToBottomMiddle();
   
   TriangleMesh triMesh;
-  std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(RESOLUTION, glm::vec3(0));
+  std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(DFRESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
   //_texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
@@ -87,6 +88,9 @@ void SimpleDFPathTracer::init()
 
   
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
+
+  _renderTexture.setupFBO(96, 96, true, GL_RGBA8, GL_RGBA, TextureDataType::TDT_UBYTE, 1);
+  _renderTexture.setupFullscreenData();
 
 }
 
@@ -122,11 +126,12 @@ void SimpleDFPathTracer::preRender()
 
 void SimpleDFPathTracer::draw()
 {
+  _renderTexture.bindFBO();
   glDisable(GL_DEPTH_TEST);
   _shader->bind();
   _texture.bindToChannel(0);
   _shader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
-  _shader->setUniform("iResolution", Vector2(_screenDim.x,_screenDim.y));
+  _shader->setUniform("iResolution", Vector2(_imageDim.x,_imageDim.y));
   _shader->setUniform("iMouse", Vector2(_mousePos.x,_mousePos.y));
   _shader->setUniform("Density", 0);
   _shader->setUniform("uModelMatrix", _m);
@@ -137,6 +142,9 @@ void SimpleDFPathTracer::draw()
   _mesh->drawBuffers();
   _shader->unbind();
 
+  _renderTexture.unbindFBO();
+
+  _renderTexture.drawFullscreen();
   //_texture.debugDraw();
   
   glEnable(GL_DEPTH_TEST);

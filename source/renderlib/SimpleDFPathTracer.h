@@ -62,6 +62,7 @@ namespace renderlib {
     glm::mat4 _m;
     glm::mat4 _mInverse;
     vmath::Vector2 _screenDim;
+    glm::vec2 _imageDim;
     
     Model _model;
     
