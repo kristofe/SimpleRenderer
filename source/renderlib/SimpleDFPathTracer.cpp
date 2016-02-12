@@ -142,7 +142,8 @@ void SimpleDFPathTracer::draw()
   _mesh->drawBuffers();
   _shader->unbind();
 
-  
+// FIXME:  Create signed dist field.
+  //FIXME: Create test cases for sphere
   //saveScreenShotTGA("screencap.tga", _imageDim.x, _imageDim.y);
   _renderTexture.unbindFBO();
 
