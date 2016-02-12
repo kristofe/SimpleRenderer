@@ -58,12 +58,12 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 256;
-  _imageDim = glm::vec2(96, 96);
+  const int DFRESOLUTION = 64;
+  _imageDim = glm::vec2(128, 128);
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="SoldierCommander40k";
+  const char* modelname ="LionessSmooth";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -83,13 +83,13 @@ void SimpleDFPathTracer::init()
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(DFRESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  //_texture.createDistanceFieldFromMesh(RESOLUTION, triMesh, true, outputName);
+  //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
-  _renderTexture.setupFBO(96, 96, true, GL_RGBA8, GL_RGBA, TextureDataType::TDT_UBYTE, 1);
+  _renderTexture.setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA8, GL_RGBA, TextureDataType::TDT_UBYTE, 1);
   _renderTexture.setupFullscreenData();
 
 }
@@ -142,6 +142,8 @@ void SimpleDFPathTracer::draw()
   _mesh->drawBuffers();
   _shader->unbind();
 
+  
+  //saveScreenShotTGA("screencap.tga", _imageDim.x, _imageDim.y);
   _renderTexture.unbindFBO();
 
   _renderTexture.drawFullscreen();
