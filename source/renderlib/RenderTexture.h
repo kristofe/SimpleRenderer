@@ -43,6 +43,7 @@ public:
   void setupDepthFBO(int width, int height);
 
   void matchFBOSizeToViewport();
+  void setFBOSize(int w, int h);
 
   void debugDraw();
   void setupDebugData(Vector2 min, Vector2 max);

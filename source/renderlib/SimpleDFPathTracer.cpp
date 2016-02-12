@@ -27,6 +27,8 @@ SimpleDFPathTracer::SimpleDFPathTracer()
 {
   _renderSortValue = IRenderable::DefaultSortValue;
   _id = ObjectIDGenerator::getInstance().getNextID();
+  _useScreenResolution = false;
+  _saveFrame = false;
 }
 
 SimpleDFPathTracer::~SimpleDFPathTracer()
@@ -36,7 +38,12 @@ SimpleDFPathTracer::~SimpleDFPathTracer()
 
 void SimpleDFPathTracer::resize()
 {
-  _screenDim = RenderManager::getInstance().getFramebufferSize();
+  vmath::Vector2 sd =  RenderManager::getInstance().getFramebufferSize();
+  _screenDim.x = sd.x;
+  _screenDim.y = sd.y;
+  _useScreenResolution ? _currentResolution = _screenDim : _currentResolution = _imageDim;
+  _renderTexture.setFBOSize(_currentResolution.x, _currentResolution.y);
+
 }
   
 void SimpleDFPathTracer::init()
@@ -58,8 +65,9 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 64;
+  const int DFRESOLUTION = 32;
   _imageDim = glm::vec2(128, 128);
+  _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
@@ -126,12 +134,13 @@ void SimpleDFPathTracer::preRender()
 
 void SimpleDFPathTracer::draw()
 {
+
   _renderTexture.bindFBO();
   glDisable(GL_DEPTH_TEST);
   _shader->bind();
   _texture.bindToChannel(0);
   _shader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
-  _shader->setUniform("iResolution", Vector2(_imageDim.x,_imageDim.y));
+  _shader->setUniform("iResolution", Vector2(_currentResolution.x,_currentResolution.y));
   _shader->setUniform("iMouse", Vector2(_mousePos.x,_mousePos.y));
   _shader->setUniform("Density", 0);
   _shader->setUniform("uModelMatrix", _m);
@@ -144,7 +153,12 @@ void SimpleDFPathTracer::draw()
 
 // FIXME:  Create signed dist field.
   //FIXME: Create test cases for sphere
-  //saveScreenShotTGA("screencap.tga", _imageDim.x, _imageDim.y);
+  if (_saveFrame)
+  {
+	  saveScreenShotTGA("screencap.tga", _imageDim.x, _imageDim.y);
+	  _saveFrame = false;
+  }
+
   _renderTexture.unbindFBO();
 
   _renderTexture.drawFullscreen();
@@ -166,11 +180,14 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   {
     //char idx = key.key - '0';
   }
-  if(key.key == 'R' && key.action == KeyInfo::KeyAction::RELEASE)
+  if(key.key == 'S' && key.action == KeyInfo::KeyAction::RELEASE)
   {
+	  _saveFrame = true;
   }
-  if(key.key == 'G' && key.action == KeyInfo::KeyAction::RELEASE)
+  if(key.key == 'I' && key.action == KeyInfo::KeyAction::RELEASE)
   {
+	  _useScreenResolution = !_useScreenResolution;
+	  resize();
   }
   if(key.key == 'B' && key.action == KeyInfo::KeyAction::RELEASE)
   {

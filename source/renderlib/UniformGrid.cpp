@@ -50,7 +50,7 @@ namespace renderlib
     uint32_t triCount = (uint32_t)tris.size();
     for(TriangleMeshTriangle& tri : tris)
     {
-      if(triangleIDX % 100 == 0)
+      if(triangleIDX % 1000 == 0)
       {
         printf("Processing triangle %d of %d\n", triangleIDX, triCount);
       }

@@ -61,8 +61,11 @@ namespace renderlib {
     vmath::Matrix4 _mvp;
     glm::mat4 _m;
     glm::mat4 _mInverse;
-    vmath::Vector2 _screenDim;
+    glm::vec2 _screenDim;
     glm::vec2 _imageDim;
+    glm::vec2 _currentResolution;
+	bool _useScreenResolution;
+	bool _saveFrame;
     
     Model _model;
 

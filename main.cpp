@@ -110,12 +110,14 @@ static void error_callback(int error, const char* description)
 
 static void keyHandler(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	//FIXME: The key codes are not always ascii... they are GLFW_KEY_*.  They map to 
+	//ascii for uppercase and numbers only.
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
   {
     glfwSetWindowShouldClose(window, GL_TRUE);
   }
   
-  if ((key == 'r' || key == 'R') && action == GLFW_PRESS)
+  if ((key == 'R') && action == GLFW_PRESS)
   {
     ShaderManager::getInstance().reloadShaders();
   }

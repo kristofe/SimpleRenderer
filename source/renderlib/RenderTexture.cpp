@@ -93,6 +93,10 @@ void RenderTexture::matchFBOSizeToViewport()
   _fboProxy->matchFBOSizeToViewport();
 }
 
+void RenderTexture::setFBOSize(int w, int h)
+{
+  _fboProxy->setFBOSize(w,h);
+}
 
 void RenderTexture::debugDraw()
 {

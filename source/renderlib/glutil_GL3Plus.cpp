@@ -128,6 +128,29 @@ namespace renderlib{
       GetGLError();
     }
 
+    void FBOProxy::setFBOSize(int w, int h)
+    {
+      if(hasDepth || !ready)
+        return;
+
+
+      if(w != width || h != height)
+      {
+        width = w;
+        height = h;
+
+        //Avoid large FBO's - crashes intel drivers
+        if (width > 2048 || height > 2048)
+        {
+          std::cout << "Requested FBO size is greater than 2048.  Halving the dimensions to prevent crash on intel Drivers" << std::endl;
+          width /= 2;
+          height /= 2;
+        }
+        GLUtil::resizeFBO(*this);
+//        setupFBO(vp[2], vp[3], false, (TextureDataType)colorDataType);
+      }
+    }
+
     void FBOProxy::matchFBOSizeToViewport()
     {
       if(hasDepth || !ready)
