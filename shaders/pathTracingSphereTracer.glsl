@@ -300,6 +300,10 @@ vec3 randomHemisphereDirection( const vec3 n ) {
 //-----------------------------------------------------
 
 vec4 lightSphere;
+vec4 light0;
+vec4 light1;
+vec4 light2;
+vec4 light3;
 
 void initLightSphere( float time ) {
 	//lightSphere = vec4( 3.0+2.*sin(time),2.8+2.*sin(time*0.9),3.0+4.*cos(time*0.7), .5 );

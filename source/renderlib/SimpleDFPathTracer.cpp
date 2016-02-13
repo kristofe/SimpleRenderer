@@ -170,7 +170,8 @@ void SimpleDFPathTracer::draw()
   //FIXME: Create test cases for sphere
   if (_saveFrame)
   {
-	  saveScreenShotTGA("screencap.tga", _imageDim.x, _imageDim.y);
+	  saveScreenShotTGA("screencap.tga", _currentResolution.x, _currentResolution.y);
+	  saveScreenShotPNG("screencap.png", _currentResolution.x, _currentResolution.y);
 	  _saveFrame = false;
   }
 
