@@ -29,6 +29,9 @@ SimpleDFPathTracer::SimpleDFPathTracer()
   _id = ObjectIDGenerator::getInstance().getNextID();
   _useScreenResolution = false;
   _saveFrame = false;
+  _elevationIDX = 0;
+  _azimuthIDX = 0;
+  _lightingIDX = 0;
 }
 
 SimpleDFPathTracer::~SimpleDFPathTracer()
@@ -107,14 +110,25 @@ void SimpleDFPathTracer::update(float time)
 
 
   // Conversion from Euler angles (in radians) to Quaternion
-  vec3 EulerAngles(0,0.5*time,  0);
+  float azimuth = _azimuths[_azimuthIDX];
+  float azimuthRadians = glm::radians(azimuth);
+  vec3 EulerAngles(0,azimuthRadians,  0);
   quat q = quat(EulerAngles);
   _m = glm::mat4_cast(q);
-  //glm::mat4 xm = glm::translate(glm::vec3(0.125, 0, 0.125));
-  //_m = _m * xm;
-
   _mInverse = glm::inverse(_m);
+
+  float elevation = -_elevations[_elevationIDX];
+  float elevationRadians = glm::radians(elevation);
+  vec3 EulerAnglesElevation(elevationRadians, 0,  0);
+  quat qElevation = quat(EulerAnglesElevation);
+  glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
+
+  glm::vec3 camPos(0.0f, 0.7f, 2.0f);
+  _cameraPosition = mat3(elevationMatrix) * camPos;
   
+  
+
+
   Matrix4 ModelviewMatrix = Matrix4::identity();
 
   float n = 1.0f;
@@ -147,6 +161,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uNormalMatrix", glm::inverseTranspose( _m));
   _shader->setUniform("uModelInverseMatrix", _mInverse);
   _shader->setUniform("uGridResolution", _gridResolution);
+  _shader->setUniform("uCameraPosition", _cameraPosition);
   
   _mesh->drawBuffers();
   _shader->unbind();
@@ -189,12 +204,48 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 	  _useScreenResolution = !_useScreenResolution;
 	  resize();
   }
-  if(key.key == 'B' && key.action == KeyInfo::KeyAction::RELEASE)
+  if(key.key == 'Z' && key.action == KeyInfo::KeyAction::RELEASE)
   {
+	  if (key.mod & GLFW_MOD_SHIFT != 0)
+	  {
+		  if (++_elevationIDX >= (unsigned)_elevations.size())
+		  {
+			  _elevationIDX = 0;
+		  }
+	  }
+	  else
+	  {
+		  if (--_elevationIDX <  0)
+		  {
+			  _elevationIDX = (unsigned)_elevations.size() - 1;
+		  }
+	  }
+	  printf("Elevation[%d]: %d\n", (int)_elevationIDX,(int)_elevations[_elevationIDX]);
   }
-  if(key.key == 'D' && key.action == KeyInfo::KeyAction::RELEASE)
+  if(key.key == 'X' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-    // _showDebug = !_showDebug;
+	  if (key.mod & GLFW_MOD_SHIFT != 0)
+	  {
+		  if (++_azimuthIDX >= (unsigned)_azimuths.size())
+		  {
+			  _azimuthIDX = 0;
+		  }
+	  }
+	  else 
+	  {
+		  if (--_azimuthIDX <  0)
+		  {
+			  _azimuthIDX = (unsigned)_azimuths.size() - 1;
+		  }
+
+	  }
+  }
+  if(key.key == 'C' && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+	  if (++_lightingIDX >= (unsigned)_lighting.size())
+	  {
+		  _lightingIDX = 0;
+	  }
   }
   if(key.key == ' ' && key.action == KeyInfo::KeyAction::PRESS)
   {

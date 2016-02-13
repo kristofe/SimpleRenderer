@@ -19,6 +19,8 @@ uniform mat4 uModelInverseMatrix;
 uniform float uGridResolution;
 uniform sampler3D Density;
 
+uniform vec3 uCameraPosition;
+
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 6
@@ -504,8 +506,9 @@ void main() {
 #else
   seed = p.x + p.y * 3.43121412313;
 #endif
-  vec3 ro = vec3(0.0, 0.0, 2.00);
-  vec3 ta = vec3(0.0, 0.0,  -0.5);//target point
+  vec3 ro = uCameraPosition;
+  //vec3 ro = vec3(0.0, 0.0, 2.00);
+  vec3 ta = vec3(0.0, -0.5,  0.0);//target point
   //vec3 ro = vec3(0.0, 0.7, 2.00);
   //vec3 ta = vec3(0.0, -0.75,  -1.00);//target point
   vec3 ww = normalize( ta - ro );
