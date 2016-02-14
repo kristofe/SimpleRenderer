@@ -21,6 +21,7 @@ uniform sampler3D Density;
 
 uniform vec3 uCameraPosition;
 
+#define LIGHTCOUNT 1
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 6
@@ -36,7 +37,7 @@ uniform vec3 uCameraPosition;
 #define MOTIONBLURFPS 12.
 
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
-#define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*1.3
+#define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
 #define WHITECOLOR vec3(.7295, .7355, .729)*0.7
 //#define WHITECOLOR vec3(.9999, .9999, .9999)
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
@@ -47,6 +48,19 @@ uniform vec3 uCameraPosition;
 #define GREENMAT  2
 #define REDMAT  3
 
+const vec4 lights[4]=vec4[4](
+  vec4( 0.0, 4.0, -1.0, 1.5),
+	vec4( -1.0, 1.0, 1.0, 0.5),
+	vec4( 1.0, 1.0, 1.0, 0.5),
+  vec4( -1.0, 1.0, -1.0, 0.5)
+);
+
+const vec3 lightColors[4]=vec3[4](
+  vec3(16.86, 16.76, 16.2)*0.5,
+  vec3(16.86, 16.76, 16.2)*0.25,
+  vec3(16.86, 16.76, 16.2)*0.25,
+  vec3(16.86, 16.76, 16.2)*0.25
+);
 
 float seed = iGlobalTime;
 
@@ -299,20 +313,19 @@ vec3 randomHemisphereDirection( const vec3 n ) {
 // light
 //-----------------------------------------------------
 
-vec4 lightSphere;
-vec4 light0;
-vec4 light1;
-vec4 light2;
-vec4 light3;
 
-void initLightSphere( float time ) {
-	//lightSphere = vec4( 3.0+2.*sin(time),2.8+2.*sin(time*0.9),3.0+4.*cos(time*0.7), .5 );
-	lightSphere = vec4( 1.0+2.*sin(time),2.8+2.*sin(time*0.9),0.0+0.*cos(time*0.7), .5 );
+/*
+void initLights( float time ) {
+	lights[0] = vec4( 1.0+2.*sin(time),2.8+2.*sin(time*0.9),0.0+0.*cos(time*0.7), .5 );
+	light1 = vec4( -1.0, 1.0, 1.0, 0.5);
+	light2 = vec4( 1.0, 1.0, 1.0, 0.5);
+	light3 = vec4( -1.0, 1.0, -1.0, 0.5);
 }
+*/
 
-vec3 sampleLight( const in vec3 ro ) {
-    vec3 n = randomSphereDirection() * lightSphere.w;
-    return lightSphere.xyz + n;
+vec3 sampleLight( const in vec3 ro, const int lightID ) {
+  vec3 n = randomSphereDirection() * lights[lightID].w;
+  return lights[lightID].xyz + n;
 }
 
 //-----------------------------------------------------
@@ -340,7 +353,10 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
 
 */
   //This is the light source
-  t = sphereIntersect( ro, rd, lightSphere ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lightSphere ); }
+  t = sphereIntersect( ro, rd, lights[0] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[0] ); }
+  t = sphereIntersect( ro, rd, lights[1] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[1] ); }
+  t = sphereIntersect( ro, rd, lights[2] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[2] ); }
+  t = sphereIntersect( ro, rd, lights[3] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[3] ); }
   //Sphere trace!!!!
   Ray ray;
   ray.origin = ro;
@@ -477,16 +493,20 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 
       fcol *= matColor( res.y );
 
-      vec3 ld = sampleLight( ro ) - ro;
+      for(int lightID = 0; lightID < LIGHTCOUNT; lightID++)
+      {
+        vec3 ld = sampleLight( ro , lightID) - ro;
 
-      vec3 nld = normalize(ld);
-      if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld)) ) {
+        vec3 nld = normalize(ld);
+        if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld)) ) {
 
-        float cos_a_max = sqrt(1. - clamp(lightSphere.w * lightSphere.w / dot(lightSphere.xyz-ro, lightSphere.xyz-ro), 0., 1.));
-        float weight = 2. * (1. - cos_a_max);
+          //float cos_a_max = sqrt(1. - clamp(lightSphere.w * lightSphere.w / dot(lightSphere.xyz-ro, lightSphere.xyz-ro), 0., 1.));
+          float cos_a_max = sqrt(1. - clamp(lights[lightID].w * lights[lightID].w / dot(lights[lightID].xyz-ro, lights[lightID].xyz-ro), 0., 1.));
+          float weight = 2. * (1. - cos_a_max);
 
-        tcol += (fcol * LIGHTCOLOR) * (weight * clamp(dot( nld, normal ), 0., 1.));
-        //tcol += normal;
+          tcol += (fcol * lightColors[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
+          //tcol += normal;
+        }
       }
     }    
     return tcol;
@@ -540,9 +560,9 @@ void main() {
 #endif        
 
 #ifdef MOTIONBLUR
-    initLightSphere( iGlobalTime + hash1() / MOTIONBLURFPS );
+    //initLights( iGlobalTime + hash1() / MOTIONBLURFPS );
 #else
-    initLightSphere( iGlobalTime );
+    //initLights( iGlobalTime );
 #endif
 
     col = traceEyePath( rof, rd);
