@@ -68,7 +68,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 32;
+  const int DFRESOLUTION = 64;
   _imageDim = glm::vec2(128, 128);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
@@ -162,6 +162,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uModelInverseMatrix", _mInverse);
   _shader->setUniform("uGridResolution", _gridResolution);
   _shader->setUniform("uCameraPosition", _cameraPosition);
+  _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
   
   _mesh->drawBuffers();
   _shader->unbind();
@@ -225,7 +226,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'X' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if (key.mod & GLFW_MOD_SHIFT != 0)
+	  if ((key.mod & GLFW_MOD_SHIFT) != 0)
 	  {
 		  if (++_azimuthIDX >= (unsigned)_azimuths.size())
 		  {
@@ -243,10 +244,26 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'C' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if (++_lightingIDX >= (unsigned)_lighting.size())
+	  if ((key.mod & GLFW_MOD_SHIFT) != 0)
 	  {
-		  _lightingIDX = 0;
+		  if (++_lightingIDX >= (int)_lighting.size())
+		  {
+			  _lightingIDX = 0;
+		  }
 	  }
+	  else 
+	  {
+		  if (--_lightingIDX <  0)
+		  {
+			  _lightingIDX = (int)_lighting.size() - 1;
+		  }
+
+	  }
+    printf("%1f, %1f, %1f, %1f\n",
+           _lightSwitching[_lightingIDX][0],
+           _lightSwitching[_lightingIDX][1],
+           _lightSwitching[_lightingIDX][2],
+           _lightSwitching[_lightingIDX][3]);
   }
   if(key.key == ' ' && key.action == KeyInfo::KeyAction::PRESS)
   {

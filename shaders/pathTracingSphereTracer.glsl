@@ -21,10 +21,11 @@ uniform sampler3D Density;
 
 uniform vec3 uCameraPosition;
 
-#define LIGHTCOUNT 1
+
+#define LIGHTCOUNT 4
 #define DFSCALING 0.6
 #define eps 0.0001
-#define EYEPATHLENGTH 6
+#define EYEPATHLENGTH 4
 #define SAMPLES 2
 
 
@@ -48,18 +49,21 @@ uniform vec3 uCameraPosition;
 #define GREENMAT  2
 #define REDMAT  3
 
+
+uniform float lightSwitches[4];
+
 const vec4 lights[4]=vec4[4](
-  vec4( 0.0, 4.0, -1.0, 1.5),
-	vec4( -1.0, 1.0, 1.0, 0.5),
-	vec4( 1.0, 1.0, 1.0, 0.5),
-  vec4( -1.0, 1.0, -1.0, 0.5)
+  vec4( 2.0, 3.0, 0.0, 2.0), //To the right even in depth
+	vec4( -2.0, 3.0, 0.0, 2.0), //To the left ??
+	vec4( -0.2, 6.0, 2.0, 2.0),  //Behind object, high and slightly to the left
+  vec4( 0.2, 4.0, -2.0, 2.0) //Behind camera to its right. slightly above
 );
 
 const vec3 lightColors[4]=vec3[4](
-  vec3(16.86, 16.76, 16.2)*0.5,
-  vec3(16.86, 16.76, 16.2)*0.25,
-  vec3(16.86, 16.76, 16.2)*0.25,
-  vec3(16.86, 16.76, 16.2)*0.25
+  vec3(16.86, 16.76, 16.2)*0.25, 
+  vec3(16.86, 16.76, 16.2)*0.25, 
+  vec3(16.86, 16.76, 16.2)*0.25, 
+  vec3(16.86, 16.76, 16.2)*0.25  
 );
 
 float seed = iGlobalTime;
@@ -503,8 +507,7 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
           //float cos_a_max = sqrt(1. - clamp(lightSphere.w * lightSphere.w / dot(lightSphere.xyz-ro, lightSphere.xyz-ro), 0., 1.));
           float cos_a_max = sqrt(1. - clamp(lights[lightID].w * lights[lightID].w / dot(lights[lightID].xyz-ro, lights[lightID].xyz-ro), 0., 1.));
           float weight = 2. * (1. - cos_a_max);
-
-          tcol += (fcol * lightColors[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
+          tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
           //tcol += normal;
         }
       }

@@ -242,10 +242,10 @@ namespace renderlib{
     glUniform3fv(location, 1, glm::value_ptr(value));
   }
   
-  void Shader::setUniform(const char* name, const glm::vec4& value)
+  void Shader::setUniform(const char* name, const float* value, int count)
   {
     GLint location = glGetUniformLocation(_programInfo->glID, name);
-    glUniform4fv(location, 1, glm::value_ptr(value));
+    glUniform1fv(location, count, value);
   }
 
 }

@@ -158,6 +158,7 @@ public:
   void setUniform(const char* name, const glm::vec2& value);
   void setUniform(const char* name, const glm::vec3& value);
   void setUniform(const char* name, const glm::vec4& value);
+  void setUniform(const char* name, const float* value, int count);
   
 
 private:

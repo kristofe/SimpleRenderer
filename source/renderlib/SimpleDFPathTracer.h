@@ -70,7 +70,15 @@ namespace renderlib {
 	int _azimuthIDX;
 	int _lightingIDX;
 	glm::vec3 _cameraPosition;
-    
+  
+  float _lightSwitching[6][4] = {
+      {1.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f, 1.0f, 0.0f, 0.0f},
+      {0.0f, 0.0f, 1.0f, 0.0f},
+      {0.0f, 0.0f, 0.0f, 1.0f},
+      {1.0f, 1.0f, 0.0f, 0.0f},
+      {0.0f, 0.0f, 1.0f, 1.0f}
+    };
     Model _model;
 
 	std::vector<std::string> categories{ "animal","human", "plane", "truck", "car" };
