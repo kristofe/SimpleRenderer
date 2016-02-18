@@ -68,13 +68,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 64;
+  const int DFRESOLUTION = 32;
   _imageDim = glm::vec2(128, 128);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="LionessSmooth";
+  const char* modelname ="Humvee50k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -94,7 +94,7 @@ void SimpleDFPathTracer::init()
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(DFRESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
+  _texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   
