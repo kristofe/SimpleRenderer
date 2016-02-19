@@ -26,7 +26,7 @@ uniform vec3 uCameraPosition;
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 6
-#define SAMPLES 16
+#define SAMPLES 4
 
 
 #define FULLBOX
