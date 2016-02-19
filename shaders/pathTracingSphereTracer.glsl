@@ -25,8 +25,8 @@ uniform vec3 uCameraPosition;
 #define LIGHTCOUNT 4
 #define DFSCALING 0.6
 #define eps 0.0001
-#define EYEPATHLENGTH 6
-#define SAMPLES 4
+#define EYEPATHLENGTH 4
+#define SAMPLES 8 
 
 
 #define FULLBOX
@@ -392,7 +392,7 @@ bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
 
   //Test against distance field
   Ray ray;
-  ray.origin = ro;
+  ray.origin = ro + (rd * eps);
   ray.dir = rd;
   float maxT = 100.0;
 
