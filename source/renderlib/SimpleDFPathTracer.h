@@ -61,6 +61,7 @@ namespace renderlib {
     vmath::Matrix4 _mvp;
     glm::mat4 _m;
     glm::mat4 _mInverse;
+    glm::mat4 _cameraMatrix;
     glm::vec2 _screenDim;
     glm::vec2 _imageDim;
     glm::vec2 _currentResolution;
@@ -70,6 +71,7 @@ namespace renderlib {
 	int _azimuthIDX;
 	int _lightingIDX;
 	glm::vec3 _cameraPosition;
+
   
   float _lightSwitching[6][4] = {
       {1.0f, 0.0f, 0.0f, 0.0f},

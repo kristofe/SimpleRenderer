@@ -123,9 +123,9 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::vec3 camPos(0.0f, 0.7f, 2.0f);
+  glm::vec3 camPos(0.0f, 0.0f, 2.0f);
   _cameraPosition = mat3(elevationMatrix) * camPos;
-  
+  _cameraMatrix = elevationMatrix;
   
 
 
@@ -162,6 +162,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uModelInverseMatrix", _mInverse);
   _shader->setUniform("uGridResolution", _gridResolution);
   _shader->setUniform("uCameraPosition", _cameraPosition);
+  _shader->setUniform("uCameraMatrix", _cameraMatrix);
   _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
   
   _mesh->drawBuffers();

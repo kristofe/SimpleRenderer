@@ -20,13 +20,14 @@ uniform float uGridResolution;
 uniform sampler3D Density;
 
 uniform vec3 uCameraPosition;
+uniform mat4 uCameraMatrix;
 
 
 #define LIGHTCOUNT 4
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 4
-#define SAMPLES 8 
+#define SAMPLES 64 
 
 
 #define FULLBOX
@@ -130,7 +131,7 @@ vec2 Union( vec2 d1, vec2 d2 )
 float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
 {
   //TODO:make these parameters
-  vec3 boxOrigin = vec3(0.0, 0.0, 0.0);
+  vec3 boxOrigin = vec3(0.0, 0.5, 0.0);
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
   vec3 invpos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
@@ -178,7 +179,6 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   WHITEMAT
   ));
  */ 
-  
       /*
   res = Union( res, 
       vec2( dfSphere( pos-vec3(0.2,0.35,-0.5), 0.4) + 0.05 , GREENMAT)
@@ -196,7 +196,7 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
             REDMAT
           )
   );*/
-  res = Union( res, vec2( dfPlane(pos - vec3(-0.5)), WHITEMAT ));
+  res = Union( res, vec2( dfPlane(pos - vec3(-0.0)), WHITEMAT ));
   if(res.x < nearestT)
   {
   	oNormal = vec3(0,1,0);
@@ -323,15 +323,6 @@ vec3 randomHemisphereDirection( const vec3 n ) {
 //-----------------------------------------------------
 
 
-/*
-void initLights( float time ) {
-	lights[0] = vec4( 1.0+2.*sin(time),2.8+2.*sin(time*0.9),0.0+0.*cos(time*0.7), .5 );
-	light1 = vec4( -1.0, 1.0, 1.0, 0.5);
-	light2 = vec4( 1.0, 1.0, 1.0, 0.5);
-	light3 = vec4( -1.0, 1.0, -1.0, 0.5);
-}
-*/
-
 vec3 sampleLight( const in vec3 ro, const int lightID ) {
   vec3 n = randomSphereDirection() * lights[lightID].w;
   return lights[lightID].xyz + n;
@@ -383,7 +374,7 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   return res;
 }
 
-bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
+bool intersectShadow( in vec3 ro, in vec3 rd, in float dist, in vec3 normal) {
     float t;
 	
   //t = sphereIntersect( ro, rd, vec4( 1.5,1.0, 2.7,1.0) );  if( t>eps && t<dist ) { return true; }
@@ -392,7 +383,7 @@ bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
 
   //Test against distance field
   Ray ray;
-  ray.origin = ro + (rd * eps);
+  ray.origin = ro + (normal * eps);
   ray.dir = rd;
   float maxT = 100.0;
 
@@ -507,7 +498,7 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
         vec3 ld = sampleLight( ro , lightID) - ro;
 
         vec3 nld = normalize(ld);
-        if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld)) ) {
+        if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld), normal) ) {
 
           float cos_a_max = sqrt(1. - clamp(lights[lightID].w * lights[lightID].w / dot(lights[lightID].xyz-ro, lights[lightID].xyz-ro), 0., 1.));
           float weight = 2. * (1. - cos_a_max);
@@ -538,10 +529,14 @@ void main() {
   seed = p.x + p.y * 3.43121412313;
 #endif
   vec3 ro = uCameraPosition;
-  //vec3 ro = vec3(0.0, 0.0, 2.00);
-  vec3 ta = vec3(0.0, -0.5,  0.0);//target point
-  //vec3 ro = vec3(0.0, 0.7, 2.00);
-  //vec3 ta = vec3(0.0, -0.75,  -1.00);//target point
+  //vec3 ro = vec3(0.0, 0.0, 1.0);
+  vec3 ta = vec3(0.0, 0.5,  0.0);//target point
+  /*
+  vec3 ww = normalize(vec3(uCameraMatrix[2]));
+  vec3 uu = normalize(vec3(uCameraMatrix[0]));
+  vec3 vv = normalize(vec3(uCameraMatrix[1]));
+  */
+
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
   vec3 vv = normalize( cross(uu,ww));
