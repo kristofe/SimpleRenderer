@@ -20,6 +20,7 @@ uniform float uGridResolution;
 uniform sampler3D Density;
 
 uniform vec3 uCameraPosition;
+uniform vec3 uObjectOffset;
 uniform mat4 uCameraMatrix;
 
 
@@ -27,7 +28,7 @@ uniform mat4 uCameraMatrix;
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 4
-#define SAMPLES 64 
+#define SAMPLES 8 
 
 
 #define FULLBOX
@@ -132,6 +133,7 @@ float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
 {
   //TODO:make these parameters
   vec3 boxOrigin = vec3(0.0, 0.5, 0.0);
+  //vec3 boxOrigin = vec3(0.0, 0.5, 0.0);// + uObjectOffset;
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
   vec3 invpos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;

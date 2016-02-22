@@ -934,13 +934,13 @@ namespace renderlib
     
   }
   
-  void Mesh::fitIntoUnitCube()
+  void Mesh::fitIntoUnitCube(glm::vec3& trans, glm::vec3& min, glm::vec3& max)
   {
-    vec3 min, max;
+    //vec3 min, max;
     calculateBoundingBox(min, max);
     //translate everything so each dim is greater than 1
     
-    glm::vec3 trans;
+    //glm::vec3 trans;
     if( min.x < 0)
       trans.x = -min.x;
     if(min.y < 0)
@@ -948,9 +948,8 @@ namespace renderlib
     if(min.z)
       trans.z = -min.z;
   
-    glm::vec3 fudge(0.000);//pull geometry away from the edges
-    trans = trans + fudge;
-  
+    printf("fit trans: %3.6f %3.6f %3.6f\n", trans.x, trans.y, trans.z);
+
     //find the longest side and scale everything so it fits into a dim of one.
     glm::vec3 diff = max - min;
     float maxDim = diff.x;
@@ -963,10 +962,13 @@ namespace renderlib
       maxDim = diff.z;
     }
   
-  float fudgeFactor = 1.0f; //Pull geometry away from the edges
-    glm::mat4 xform =  glm::scale(glm::vec3((1.0f/maxDim))*fudgeFactor);
+	glm::mat4 xform = glm::scale(glm::vec3(1.0f / maxDim));
+	printf("Scaling: %3.4f\n", 1.0f / maxDim);
     xform = xform * glm::translate(trans);
-  
+ 
+	//trans = glm::vec3(glm::inverse(xform) * glm::vec4(0,0,0,1));
+	trans = glm::vec3(xform * glm::vec4(0.0, 0.0, 0.0, 1.0f));
+	
     transformMesh(xform);
   
     //REMOVE LATER: Check that the mesh is transformed correctly

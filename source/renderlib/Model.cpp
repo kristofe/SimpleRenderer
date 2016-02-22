@@ -213,7 +213,7 @@ void Model::loadModelFromFile(std::string path, bool flipUVs, bool forDistField)
 	   //This with aiProcess_FindDegenerates and aiProcess_SortByPType will get rid of all degenerate triangles and not create lines or points.
 	  importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType::aiPrimitiveType_POINT | aiPrimitiveType::aiPrimitiveType_LINE);
 	  //Configures the #aiProcess_PretransformVertices step to normalize all vertex components into the[-1, 1] range.
-	  importer.SetPropertyInteger(AI_CONFIG_PP_PTV_NORMALIZE, 1);
+	  //importer.SetPropertyInteger(AI_CONFIG_PP_PTV_NORMALIZE, 1);
 
   }
   if (flipUVs)

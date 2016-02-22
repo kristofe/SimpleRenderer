@@ -72,6 +72,7 @@ namespace renderlib {
 	int _lightingIDX;
 	glm::vec3 _cameraPosition;
 
+    glm::vec3 _trans, _min, _max;
   
   float _lightSwitching[6][4] = {
       {1.0f, 0.0f, 0.0f, 0.0f},

@@ -68,13 +68,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 128;
+  const int DFRESOLUTION = 32;
   _imageDim = glm::vec2(128, 128);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="Humvee50k";
+  const char* modelname ="SoldierCommander60k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -87,16 +87,17 @@ void SimpleDFPathTracer::init()
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
 
-  normalMesh.fitIntoUnitCube();
-  normalMesh.movePivotToBottomMiddle();
+  normalMesh.fitIntoUnitCube(_trans, _min, _max);
+  //normalMesh.movePivotToBottomMiddle();
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(DFRESOLUTION, glm::vec3(0));
   normalMesh.convertToTriangleMesh(triMesh, grid);
   
-  //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
+  _texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
+  printf("trans: %3.6f %3.6f %3.6f\n", _trans.x, _trans.y, _trans.z);
   
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
@@ -162,6 +163,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uModelInverseMatrix", _mInverse);
   _shader->setUniform("uGridResolution", _gridResolution);
   _shader->setUniform("uCameraPosition", _cameraPosition);
+  _shader->setUniform("uObjectOffset", _trans);
   _shader->setUniform("uCameraMatrix", _cameraMatrix);
   _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
   
