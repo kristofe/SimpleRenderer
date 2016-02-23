@@ -936,6 +936,9 @@ namespace renderlib
   
   void Mesh::fitIntoUnitCube(glm::vec3& trans, glm::vec3& min, glm::vec3& max)
   {
+	//This now assumes that the pivot point/origin is at the base of the model and
+	//at the center of its rotation.
+
     //vec3 min, max;
     calculateBoundingBox(min, max);
     //translate everything so each dim is greater than 1
@@ -950,6 +953,9 @@ namespace renderlib
   
     printf("fit trans: %3.6f %3.6f %3.6f\n", trans.x, trans.y, trans.z);
 
+	//trans = glm::vec3(1.0, 1.0, 1.0);
+	trans = glm::vec3(0.5, 0.0, 0.5);
+
     //find the longest side and scale everything so it fits into a dim of one.
     glm::vec3 diff = max - min;
     float maxDim = diff.x;
@@ -962,13 +968,10 @@ namespace renderlib
       maxDim = diff.z;
     }
   
-	glm::mat4 xform = glm::scale(glm::vec3(1.0f / maxDim));
-	printf("Scaling: %3.4f\n", 1.0f / maxDim);
+	glm::mat4 xform = glm::scale(glm::vec3(1.0f / (maxDim*1.1)));
+    transformMesh(xform);
+
     xform = xform * glm::translate(trans);
- 
-	//trans = glm::vec3(glm::inverse(xform) * glm::vec4(0,0,0,1));
-	trans = glm::vec3(xform * glm::vec4(0.0, 0.0, 0.0, 1.0f));
-	
     transformMesh(xform);
   
     //REMOVE LATER: Check that the mesh is transformed correctly

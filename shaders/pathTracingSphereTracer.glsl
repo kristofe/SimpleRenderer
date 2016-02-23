@@ -132,8 +132,8 @@ vec2 Union( vec2 d1, vec2 d2 )
 float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
 {
   //TODO:make these parameters
-  vec3 boxOrigin = vec3(0.0, 0.5, 0.0);
-  //vec3 boxOrigin = vec3(0.0, 0.5, 0.0);// + uObjectOffset;
+  //vec3 boxOrigin = vec3(0.0, 0.5, 0.0);
+  vec3 boxOrigin = vec3(0.0, 0.5, 0.0);// - uObjectOffset;
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
   vec3 invpos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
