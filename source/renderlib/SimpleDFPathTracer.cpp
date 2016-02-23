@@ -32,11 +32,22 @@ SimpleDFPathTracer::SimpleDFPathTracer()
   _elevationIDX = 0;
   _azimuthIDX = 0;
   _lightingIDX = 0;
+  _renderTexture0 = new RenderTexture();
+  _renderTexture1 = new RenderTexture();
+  
 }
 
 SimpleDFPathTracer::~SimpleDFPathTracer()
 {
-
+  delete _renderTexture0;
+  delete _renderTexture1;
+}
+  
+void SimpleDFPathTracer::resetFBOs()
+{
+  _renderTexture0->clear();
+  _renderTexture1->clear();
+  
 }
 
 void SimpleDFPathTracer::resize()
@@ -45,7 +56,9 @@ void SimpleDFPathTracer::resize()
   _screenDim.x = sd.x;
   _screenDim.y = sd.y;
   _useScreenResolution ? _currentResolution = _screenDim : _currentResolution = _imageDim;
-  _renderTexture.setFBOSize(_currentResolution.x, _currentResolution.y);
+  _renderTexture0->setFBOSize(_currentResolution.x, _currentResolution.y);
+  _renderTexture1->setFBOSize(_currentResolution.x, _currentResolution.y);
+  resetFBOs();
 
 }
   
@@ -103,9 +116,11 @@ void SimpleDFPathTracer::init()
   
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
-  _renderTexture.setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA8, GL_RGBA, TextureDataType::TDT_UBYTE, 1);
-  _renderTexture.setupFullscreenData();
+  _renderTexture0->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
+  _renderTexture0->setupFullscreenData();
 
+  _renderTexture1->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
+  _renderTexture1->setupFullscreenData();
 }
 
 void SimpleDFPathTracer::update(float time)
@@ -152,10 +167,12 @@ void SimpleDFPathTracer::preRender()
 void SimpleDFPathTracer::draw()
 {
 
-  _renderTexture.bindFBO();
+  _renderTexture0->bindFBO();
   glDisable(GL_DEPTH_TEST);
   _shader->bind();
   _texture.bindToChannel(0);
+  _renderTexture1->bindTargetToChannel(1);
+  _shader->setUniform("uPreviousFrameTexture",1);
   _shader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
   _shader->setUniform("iResolution", Vector2(_currentResolution.x,_currentResolution.y));
   _shader->setUniform("iMouse", Vector2(_mousePos.x,_mousePos.y));
@@ -168,6 +185,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uObjectOffset", _trans);
   _shader->setUniform("uCameraMatrix", _cameraMatrix);
   _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
+  _shader->setUniform("uNumSamples", _numSamples);
   
   _mesh->drawBuffers();
   _shader->unbind();
@@ -181,12 +199,19 @@ void SimpleDFPathTracer::draw()
 	  _saveFrame = false;
   }
 
-  _renderTexture.unbindFBO();
+  _renderTexture0->unbindFBO();
 
-  _renderTexture.drawFullscreen();
+  _renderTexture0->drawFullscreen();
   //_texture.debugDraw();
   
   glEnable(GL_DEPTH_TEST);
+  
+  
+  //swap the render targets and update the sample count
+  RenderTexture* tmp = _renderTexture0;
+  _renderTexture0 = _renderTexture1;
+  _renderTexture1 = tmp;
+  _numSamples += 4;
 
 }
 
@@ -227,6 +252,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 			  _elevationIDX = (unsigned)_elevations.size() - 1;
 		  }
 	  }
+    resetFBOs();
 	  printf("Elevation[%d]: %d\n", (int)_elevationIDX,(int)_elevations[_elevationIDX]);
   }
   if(key.key == 'X' && key.action == KeyInfo::KeyAction::RELEASE)
@@ -244,8 +270,8 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 		  {
 			  _azimuthIDX = (unsigned)_azimuths.size() - 1;
 		  }
-
 	  }
+    resetFBOs();
   }
   if(key.key == 'C' && key.action == KeyInfo::KeyAction::RELEASE)
   {
@@ -269,6 +295,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
            _lightSwitching[_lightingIDX][1],
            _lightSwitching[_lightingIDX][2],
            _lightSwitching[_lightingIDX][3]);
+    resetFBOs();
   }
   if(key.key == ' ' && key.action == KeyInfo::KeyAction::PRESS)
   {

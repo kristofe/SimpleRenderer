@@ -10,6 +10,7 @@ out vec4 fragColor;
 uniform vec2 iResolution;
 uniform vec2 iMouse;
 uniform float iGlobalTime;
+uniform int uNumSamples;
 
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
@@ -18,6 +19,7 @@ uniform mat4 uNormalMatrix;
 uniform mat4 uModelInverseMatrix;
 uniform float uGridResolution;
 uniform sampler3D Density;
+uniform sampler2D uPreviousFrameTexture;
 
 uniform vec3 uCameraPosition;
 uniform vec3 uObjectOffset;
@@ -28,7 +30,7 @@ uniform mat4 uCameraMatrix;
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 4
-#define SAMPLES 8 
+#define SAMPLES 4 
 
 
 #define FULLBOX
@@ -574,10 +576,20 @@ void main() {
     seed = mod( seed*1.1234567893490423, 13. );
   }
 
-  tot /= float(SAMPLES);
+  //tot /= float(SAMPLES);
+
+  //now sample the last frame
+  vec4 last = texture(uPreviousFrameTexture,q);
+  vec3 lastTot = last.xyz;
+  lastTot *= last.w;
+
+  float totSamples = last.w + float(SAMPLES);
+
+  tot = tot + lastTot/totSamples;
+  //tot = (tot + lastTot)/2.0;
     
 	tot = pow( clamp(tot,0.0,1.0), vec3(0.45) );
-  fragColor = vec4( tot, 1.0 );
+  fragColor = vec4( tot, totSamples);
 }
 
 

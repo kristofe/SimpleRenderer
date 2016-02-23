@@ -38,6 +38,7 @@ namespace renderlib {
     void postRender();
     void resize();
     void reset(){};
+    void resetFBOs();
     
     int  getRenderSortValue() {return _renderSortValue;};
     
@@ -94,8 +95,10 @@ namespace renderlib {
     
     //TextureProxy* _tex;
     Texture _texture;
-    RenderTexture _renderTexture;
+    RenderTexture* _renderTexture0{nullptr};
+    RenderTexture* _renderTexture1{nullptr};
     glm::vec2 _mousePos;
+    int _numSamples{0};
   };
 
 } // namespace renderlib
