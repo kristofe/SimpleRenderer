@@ -588,6 +588,7 @@ void main() {
     
   //The pow breaks accumulation - have to gamma correct at some other point
 	//tot = pow( clamp(tot,0.0,1.0), vec3(0.45) );
+  //tot = clamp(tot, 0.0, 1.0);
 
   fragColor = vec4( tot, totSamples);
 }

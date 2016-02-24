@@ -81,13 +81,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 32;
+  const int DFRESOLUTION = 128;
   _imageDim = glm::vec2(128, 128);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="LionessLowPoly";
+  const char* modelname ="SoldierCommander60k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -96,6 +96,8 @@ void SimpleDFPathTracer::init()
   //normalMesh.createSphereMeshData(8, 8);
   //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
   //normalMesh.createTriangle();
+  
+  
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
   _model.collapseMeshes(normalMesh, materials);
