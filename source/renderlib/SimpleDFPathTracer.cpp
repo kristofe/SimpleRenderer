@@ -87,7 +87,7 @@ void SimpleDFPathTracer::init()
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="SoldierCommander60k";
+  const char* modelname ="Humvee50k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -115,6 +115,7 @@ void SimpleDFPathTracer::init()
   printf("trans: %3.6f %3.6f %3.6f\n", _trans.x, _trans.y, _trans.z);
   printf("min: %3.6f %3.6f %3.6f\n", _min.x, _min.y, _min.z);
   printf("max: %3.6f %3.6f %3.6f\n", _max.x, _max.y, _max.z);
+  _targetHeight = _max.y * 0.5f;
   
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
@@ -187,6 +188,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uObjectOffset", _trans);
   _shader->setUniform("uCameraMatrix", _cameraMatrix);
   _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
+  _shader->setUniform("uTargetHeight", _targetHeight);
   
   _mesh->drawBuffers();
   _shader->unbind();

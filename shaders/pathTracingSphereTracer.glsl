@@ -23,13 +23,13 @@ uniform sampler2D uPreviousFrameTexture;
 uniform vec3 uCameraPosition;
 uniform vec3 uObjectOffset;
 uniform mat4 uCameraMatrix;
-
+uniform float uTargetHeight;
 
 #define LIGHTCOUNT 4
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 4
-#define SAMPLES 2
+#define SAMPLES 1
 
 
 #define FULLBOX
@@ -198,12 +198,13 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
             ) + 0.05 ,
             REDMAT
           )
-  );*/
+  );
   res = Union( res, vec2( dfPlane(pos - vec3(-0.0)), WHITEMAT ));
   if(res.x < nearestT)
   {
   	oNormal = vec3(0,1,0);
   }
+       */
   return res;
 }
 
@@ -339,9 +340,9 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
 	vec2 res = vec2( 1e20, -1.0 );
   float t;
 	
-  /*
   //Box
-  t = planeIntersect( ro, rd, vec4( 0.0, 1.0, 0.0,0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 1., 0.); }
+  t = planeIntersect( ro, rd, vec4( 0.0, 1.0, 0.0, 0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 1., 0.); }
+  /*
   t = planeIntersect( ro, rd, vec4( 0.0, 0.0,-1.0,8.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 0.,-1.); }
   t = planeIntersect( ro, rd, vec4( 1.0, 0.0, 0.0,0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 2. ); normal = vec3( 1., 0., 0.); }
 #ifdef FULLBOX
@@ -533,7 +534,8 @@ void main() {
 #endif
   vec3 ro = uCameraPosition;
   //vec3 ro = vec3(0.0, 0.0, 1.0);
-  vec3 ta = vec3(0.0, 0.5,  0.0);//target point
+  //vec3 ta = vec3(0.0, 0.5,  0.0);//target point
+  vec3 ta = vec3(0.0, uTargetHeight,  0.0);//target point
   /*
   vec3 ww = normalize(vec3(uCameraMatrix[2]));
   vec3 uu = normalize(vec3(uCameraMatrix[0]));

@@ -1,0 +1,6 @@
+Maya Export Notes
+
+put local pivot at origin
+put model at origin
+scale model below unit cube
+export selection
