@@ -10,7 +10,6 @@ out vec4 fragColor;
 uniform vec2 iResolution;
 uniform vec2 iMouse;
 uniform float iGlobalTime;
-uniform int uNumSamples;
 
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
@@ -30,7 +29,7 @@ uniform mat4 uCameraMatrix;
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 4
-#define SAMPLES 4 
+#define SAMPLES 2
 
 
 #define FULLBOX
@@ -585,10 +584,11 @@ void main() {
 
   float totSamples = last.w + float(SAMPLES);
 
-  tot = tot + lastTot/totSamples;
-  //tot = (tot + lastTot)/2.0;
+  tot = (tot + lastTot)/totSamples;
     
-	tot = pow( clamp(tot,0.0,1.0), vec3(0.45) );
+  //The pow breaks accumulation - have to gamma correct at some other point
+	//tot = pow( clamp(tot,0.0,1.0), vec3(0.45) );
+
   fragColor = vec4( tot, totSamples);
 }
 

@@ -81,13 +81,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 128;
+  const int DFRESOLUTION = 32;
   _imageDim = glm::vec2(128, 128);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="SoldierCommander60k";
+  const char* modelname ="LionessLowPoly";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -185,7 +185,6 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uObjectOffset", _trans);
   _shader->setUniform("uCameraMatrix", _cameraMatrix);
   _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
-  _shader->setUniform("uNumSamples", _numSamples);
   
   _mesh->drawBuffers();
   _shader->unbind();
@@ -211,7 +210,6 @@ void SimpleDFPathTracer::draw()
   RenderTexture* tmp = _renderTexture0;
   _renderTexture0 = _renderTexture1;
   _renderTexture1 = tmp;
-  _numSamples += 4;
 
 }
 
