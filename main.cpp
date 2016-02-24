@@ -36,7 +36,7 @@
 #include "Painter.h"
 
 //These should be moved into a class 
-uvec2 windowSize{100,100};
+uvec2 windowSize{96,96};
 ivec2 windowPosition{0,0};
 ivec2 mousePosition;
 bool mouseDown{false};

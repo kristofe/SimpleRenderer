@@ -82,12 +82,12 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
   const int DFRESOLUTION = 128;
-  _imageDim = glm::vec2(128, 128);
+  _imageDim = glm::vec2(96, 96);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="Humvee50k";
+  const char* modelname ="SoldierCommander60k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -144,7 +144,7 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::vec3 camPos(0.0f, 0.0f, 2.0f);
+  glm::vec3 camPos(0.0f, 0.0f, 2.5f);
   _cameraPosition = mat3(elevationMatrix) * camPos;
   _cameraMatrix = elevationMatrix;
   

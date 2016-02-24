@@ -42,7 +42,8 @@ uniform float uTargetHeight;
 
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
-#define WHITECOLOR vec3(.7295, .7355, .729)*0.7
+#define WHITECOLOR vec3(.7295, .7355, .729)*0.37
+#define FLOORCOLOR vec3(1., 1., 1.)* 0.15
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
 
@@ -50,6 +51,7 @@ uniform float uTargetHeight;
 #define WHITEMAT 1
 #define GREENMAT  2
 #define REDMAT  3
+#define FLOORMAT 4
 
 //TOP MEDIUM + LEFT = L0
 //TOP BRIGHT + FRONT = L1
@@ -61,15 +63,15 @@ uniform float uTargetHeight;
 uniform float lightSwitches[4];
 
 const vec4 lights[4]=vec4[4](
-	vec4( -0.0, 4.0, -0.2, 1.5), //TOP BRIGHT: looks correct for l5
-	vec4( -0.0, 4.0, -0.2, 1.5), //TOP MEDIUM: looks correct for l5
+	vec4( 0.0, 6.0, -1.2, 1.0), //TOP BRIGHT: looks correct for l5
+	vec4( -2.8, 3.0, 3.2, 1.5), //TOP MEDIUM: looks correct for l5
   vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
   vec4( 0.2, 4.0, -2.0, 2.0) //Behind camera to its right. slightly above
 );
 
 const vec3 lightColors[4]=vec3[4](
-  vec3(16.86, 16.76, 16.2)*0.65, 
-  vec3(16.86, 16.76, 16.2)*0.1, 
+  vec3(16.86, 16.76, 16.2)*0.15, 
+  vec3(16.86, 16.76, 16.2)*0.16, 
   vec3(16.86, 16.76, 16.2)*0.1, 
   vec3(16.86, 16.76, 16.2)*0.25  
 );
@@ -341,7 +343,7 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   float t;
 	
   //Box
-  t = planeIntersect( ro, rd, vec4( 0.0, 1.0, 0.0, 0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 1., 0.); }
+  t = planeIntersect( ro, rd, vec4( 0.0, 1.0, 0.0, 0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, FLOORMAT ); normal = vec3( 0., 1., 0.); }
   /*
   t = planeIntersect( ro, rd, vec4( 0.0, 0.0,-1.0,8.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 0.,-1.); }
   t = planeIntersect( ro, rd, vec4( 1.0, 0.0, 0.0,0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 2. ); normal = vec3( 1., 0., 0.); }
@@ -401,21 +403,11 @@ bool intersectShadow( in vec3 ro, in vec3 rd, in float dist, in vec3 normal) {
 //-----------------------------------------------------
 // materials
 //-----------------------------------------------------
-/*
-vec3 matColor( const in float mat ) {
-	vec3 nor = vec3(0., 0.95, 0.);
-	
-	if( mat<3.5 ) nor = REDCOLOR;
-  if( mat<2.5 ) nor = GREENCOLOR;
-	if( mat<1.5 ) nor = WHITECOLOR;
-	if( mat<0.5 ) nor = LIGHTCOLOR;
-					  
-  return nor;
-}*/
 vec3 matColor( const in float mat ) {
   vec3 col = vec3(0., 0.95, 0.);
       
   if( mat == REDMAT ) col = REDCOLOR;
+  if( mat == FLOORMAT ) col = FLOORCOLOR;
   if( mat == GREENMAT ) col = GREENCOLOR;
   if( mat == WHITEMAT ) col = WHITECOLOR;
   if( mat == LIGHTMAT ) col = LIGHTCOLOR;
@@ -506,7 +498,8 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 
           float cos_a_max = sqrt(1. - clamp(lights[lightID].w * lights[lightID].w / dot(lights[lightID].xyz-ro, lights[lightID].xyz-ro), 0., 1.));
           float weight = 2. * (1. - cos_a_max);
-          tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
+          //tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
+          tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (clamp(dot( nld, normal ), 0., 1.));
           //tcol += normal;
         }
       }
