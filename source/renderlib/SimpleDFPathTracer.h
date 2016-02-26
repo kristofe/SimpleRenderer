@@ -76,13 +76,13 @@ namespace renderlib {
     glm::vec3 _trans, _min, _max;
     float _targetHeight;
   
-  float _lightSwitching[6][4] = {
-      {1.0f, 0.0f, 0.0f, 0.0f},
-      {1.0f, 1.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 1.0f, 0.0f},
-      {0.0f, 0.0f, 0.0f, 1.0f},
-      {1.0f, 1.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 1.0f, 1.0f}
+  float _lightSwitching[6][6] = {
+      {1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+      {1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+      {1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f}
     };
     Model _model;
 

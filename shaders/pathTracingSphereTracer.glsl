@@ -25,10 +25,10 @@ uniform vec3 uObjectOffset;
 uniform mat4 uCameraMatrix;
 uniform float uTargetHeight;
 
-#define LIGHTCOUNT 4
+#define LIGHTCOUNT 6
 #define DFSCALING 0.6
 #define eps 0.0001
-#define EYEPATHLENGTH 4
+#define EYEPATHLENGTH 6
 #define SAMPLES 1
 
 
@@ -42,8 +42,9 @@ uniform float uTargetHeight;
 
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
-#define WHITECOLOR vec3(.7295, .7355, .729)*0.37
-#define FLOORCOLOR vec3(1., 1., 1.)* 0.15
+//#define WHITECOLOR vec3(.7295, .7355, .729)*0.9
+#define WHITECOLOR vec3(1., 1., 1.)*0.5
+#define FLOORCOLOR vec3(1., 1., 1.) * 0.5
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
 
@@ -60,20 +61,25 @@ uniform float uTargetHeight;
 // front + right = L4
 //TOP BRIGHT = L5
 
-uniform float lightSwitches[4];
+uniform float lightSwitches[6];
 
-const vec4 lights[4]=vec4[4](
-	vec4( 0.0, 6.0, -1.2, 1.0), //TOP BRIGHT: looks correct for l5
-	vec4( -2.8, 3.0, 3.2, 1.5), //TOP MEDIUM: looks correct for l5
+
+const vec4 lights[6]=vec4[6](
+	vec4(  0.5, 5.2, -0.4, 1.0), 
+	vec4( -1.50, 4.0, 2.2,  2.0), 
+  vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
+  vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
   vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
   vec4( 0.2, 4.0, -2.0, 2.0) //Behind camera to its right. slightly above
 );
 
-const vec3 lightColors[4]=vec3[4](
-  vec3(16.86, 16.76, 16.2)*0.15, 
-  vec3(16.86, 16.76, 16.2)*0.16, 
-  vec3(16.86, 16.76, 16.2)*0.1, 
-  vec3(16.86, 16.76, 16.2)*0.25  
+const vec3 lightColors[6]=vec3[6](
+  vec3(1., 1., 1.)*1.0,
+  vec3(1., 1., 1.)*1.0,
+  vec3(1., 1., 1.)*0.1, 
+  vec3(1., 1., 1.)*0.1, 
+  vec3(1., 1., 1.)*0.1, 
+  vec3(1., 1., 1.)*0.1
 );
 
 float seed = iGlobalTime;
@@ -357,12 +363,12 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   //This is the green transparent sphere
   //t = sphereIntersect( ro, rd, vec4( 4.0,1.0, 4.0, 1.0) ); if( t>eps && t<res.x ) { res = vec2( t, 6. ); normal = sphereNormal( ro+t*rd, vec4( 4.0,1.0, 4.0,1.0) ); }
 
-*/
   //This is the light source
   t = sphereIntersect( ro, rd, lights[0] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[0] ); }
   t = sphereIntersect( ro, rd, lights[1] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[1] ); }
   t = sphereIntersect( ro, rd, lights[2] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[2] ); }
   t = sphereIntersect( ro, rd, lights[3] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[3] ); }
+*/
   //Sphere trace!!!!
   Ray ray;
   ray.origin = ro;
@@ -577,6 +583,7 @@ void main() {
   vec3 lastTot = last.xyz;
   lastTot *= last.w;
 
+  //tot += vec3(0.01,0.01,0.01);
   float totSamples = last.w + float(SAMPLES);
 
   tot = (tot + lastTot)/totSamples;

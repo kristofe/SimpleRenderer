@@ -81,13 +81,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 128;
+  const int DFRESOLUTION = 256;
   _imageDim = glm::vec2(96, 96);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="SoldierCommander60k";
+  const char* modelname ="Humvee50k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
