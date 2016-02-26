@@ -87,7 +87,7 @@ void SimpleDFPathTracer::init()
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="Humvee50k";
+  const char* modelname ="Humvee200k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
