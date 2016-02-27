@@ -509,7 +509,7 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
           //tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (clamp(dot( nld, normal ), 0., 1.));
           */
 
-
+//FIXME: THIS NEEDS TO BE CLEANED UP AND TWEAKED
           const float specularPower = 1.0;
           const float ambient = 0.0;
 
