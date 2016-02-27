@@ -28,7 +28,7 @@ uniform float uTargetHeight;
 #define LIGHTCOUNT 6
 #define DFSCALING 0.6
 #define eps 0.0001
-#define EYEPATHLENGTH 6
+#define EYEPATHLENGTH 8
 #define SAMPLES 1
 
 
@@ -43,7 +43,7 @@ uniform float uTargetHeight;
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
 //#define WHITECOLOR vec3(.7295, .7355, .729)*0.9
-#define WHITECOLOR vec3(1., 1., 1.)*0.5
+#define WHITECOLOR vec3(1., 1., 1.)*0.4
 #define FLOORCOLOR vec3(1., 1., 1.) * 0.5
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
@@ -502,10 +502,37 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
         vec3 nld = normalize(ld);
         if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld), normal) ) {
 
+        /*
           float cos_a_max = sqrt(1. - clamp(lights[lightID].w * lights[lightID].w / dot(lights[lightID].xyz-ro, lights[lightID].xyz-ro), 0., 1.));
           float weight = 2. * (1. - cos_a_max);
-          //tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
-          tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (clamp(dot( nld, normal ), 0., 1.));
+          tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
+          //tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (clamp(dot( nld, normal ), 0., 1.));
+          */
+
+
+          const float specularPower = 1.0;
+          const float ambient = 0.0;
+
+		const vec3 diffuseColor = vec3(1.0);
+		const vec3 specColor = vec3(0.4);
+		vec3 lightDir = normalize(vec3(lights[lightID])- ro);
+
+		float lambertian = max(dot(lightDir,normal), 0.0);
+
+		vec3 reflectDir = reflect(-lightDir, normal);
+		vec3 viewDir = normalize(ro);
+
+		float specAngle = max(dot(reflectDir, viewDir), 0.0);
+		float specular = pow(specAngle, specularPower);
+
+		// according to the rendering equation we would need to multiply
+		// with the the "lambertian", but this has little visual effect
+		//specular *= lambertian;
+
+		//tcol = vec4( lambertian*diffuseColor + specular*specColor, 1.0);
+        //tcol += fcol*lightColors[lightID]*lightSwitches[lightID]*(lambertian*diffuseColor + specular*specColor);
+        tcol += fcol*lightColors[lightID]*lightSwitches[lightID]*(lambertian*diffuseColor +specular*specColor);
+
           //tcol += normal;
         }
       }
