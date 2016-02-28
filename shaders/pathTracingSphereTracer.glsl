@@ -44,7 +44,7 @@ uniform float uTargetHeight;
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
 //#define WHITECOLOR vec3(.7295, .7355, .729)*0.9
 #define WHITECOLOR vec3(1., 1., 1.)*0.4
-#define FLOORCOLOR vec3(1., 1., 1.) * 0.5
+#define FLOORCOLOR vec3(1., 1., 1.) * 0.8
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
 
@@ -66,11 +66,11 @@ uniform float lightSwitches[6];
 
 const vec4 lights[6]=vec4[6](
 	vec4(  0.5, 5.2, -0.4, 1.0), 
-	vec4( -1.50, 4.0, 2.2,  2.0), 
-  vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
-  vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
-  vec4( -0.0, 3.0, 2.0, 0.65), //FRONT: looks correct for l2
-  vec4( 0.2, 4.0, -2.0, 2.0) //Behind camera to its right. slightly above
+	vec4( -1.50, 1.0, 2.2,  4.0),//Correct!!! 
+  vec4( -0.0, 3.0, 2.0, 0.65), 
+  vec4( -0.0, 3.0, 2.0, 0.65),
+  vec4( -0.0, 3.0, 2.0, 0.65),
+  vec4( 0.2, 4.0, -2.0, 2.0) 
 );
 
 const vec3 lightColors[6]=vec3[6](
@@ -511,10 +511,10 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 
 //FIXME: THIS NEEDS TO BE CLEANED UP AND TWEAKED
           const float specularPower = 1.0;
-          const float ambient = 0.0;
+          const float ambient = 0.01;
 
 		const vec3 diffuseColor = vec3(1.0);
-		const vec3 specColor = vec3(0.4);
+		const vec3 specColor = vec3(0.9);
 		vec3 lightDir = normalize(vec3(lights[lightID])- ro);
 
 		float lambertian = max(dot(lightDir,normal), 0.0);
@@ -531,7 +531,7 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 
 		//tcol = vec4( lambertian*diffuseColor + specular*specColor, 1.0);
         //tcol += fcol*lightColors[lightID]*lightSwitches[lightID]*(lambertian*diffuseColor + specular*specColor);
-        tcol += fcol*lightColors[lightID]*lightSwitches[lightID]*(lambertian*diffuseColor +specular*specColor);
+        tcol += fcol*lightColors[lightID]*lightSwitches[lightID]*(lambertian*diffuseColor +specular*specColor + vec3(ambient));
 
           //tcol += normal;
         }

@@ -144,7 +144,7 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::vec3 camPos(0.0f, 0.0f, 2.5f);
+  glm::vec3 camPos(0.0f, 0.0f, 2.0f);
   _cameraPosition = mat3(elevationMatrix) * camPos;
   _cameraMatrix = elevationMatrix;
   
@@ -187,7 +187,7 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uCameraPosition", _cameraPosition);
   _shader->setUniform("uObjectOffset", _trans);
   _shader->setUniform("uCameraMatrix", _cameraMatrix);
-  _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],4);
+  _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],6);
   _shader->setUniform("uTargetHeight", _targetHeight);
   
   _mesh->drawBuffers();
@@ -277,7 +277,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'C' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if ((key.mod & GLFW_MOD_SHIFT) != 0)
+	  if ((key.mod & GLFW_MOD_SHIFT) == 0)
 	  {
 		  if (++_lightingIDX >= (int)_lighting.size())
 		  {
@@ -292,11 +292,13 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 		  }
 
 	  }
-    printf("%1f, %1f, %1f, %1f\n",
+    printf("%1f, %1f, %1f, %1f, %1f, %1f\n",
            _lightSwitching[_lightingIDX][0],
            _lightSwitching[_lightingIDX][1],
            _lightSwitching[_lightingIDX][2],
-           _lightSwitching[_lightingIDX][3]);
+           _lightSwitching[_lightingIDX][3],
+           _lightSwitching[_lightingIDX][4],
+           _lightSwitching[_lightingIDX][5]);
     resetFBOs();
   }
   if(key.key == ' ' && key.action == KeyInfo::KeyAction::PRESS)
