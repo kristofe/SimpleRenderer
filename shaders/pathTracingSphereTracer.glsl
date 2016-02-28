@@ -63,7 +63,8 @@ uniform float uTargetHeight;
 
 uniform float lightSwitches[6];
 
-
+//NOTE:  Best results are from rescaling a higher resolution image down to 96x96.  Much closer to the
+//the actual training data
 const vec4 lights[6]=vec4[6](
 	vec4(  0.5, 5.2, -0.4, 1.0), 
 	vec4( -1.50, 1.0, 2.2,  4.0),//Correct!!! 
