@@ -6,12 +6,6 @@ uniform sampler2D uTexture0;
 uniform float iGlobalTime;
 uniform float uTimeScale;
 
-void main(void) {
-  //vec3 c = texture(uTexture0, vUV).rgb;
-  vec4 c = biCubic(uTexture0, vUV, vec2(1.0, 1.0));
-  color = c;
-}
-
 vec4 cubic(float v)
 {
     vec4 n = vec4(1.0, 2.0, 3.0, 4.0) - v;
@@ -23,7 +17,7 @@ vec4 cubic(float v)
     return vec4(x, y, z, w);
 }
 
-vec4 biCubic(sampler2D texture, vec2 texcoord, vec2 texscale)
+vec4 sampleTextureBiCubic(sampler2D tex, vec2 texcoord, vec2 texscale)
 {
     float fx = fract(texcoord.x);
     float fy = fract(texcoord.y);
@@ -40,13 +34,13 @@ ycubic.y, ycubic.z + ycubic.w);
     vec4 offset = c + vec4(xcubic.y, xcubic.w, ycubic.y, ycubic.w) /
 s;
 
-    vec4 sample0 = texture(texture, vec2(offset.x, offset.z) *
+    vec4 sample0 = texture(tex, vec2(offset.x, offset.z) *
 texscale);
-    vec4 sample1 = texture(texture, vec2(offset.y, offset.z) *
+    vec4 sample1 = texture(tex, vec2(offset.y, offset.z) *
 texscale);
-    vec4 sample2 = texture(texture, vec2(offset.x, offset.w) *
+    vec4 sample2 = texture(tex, vec2(offset.x, offset.w) *
 texscale);
-    vec4 sample3 = texture(texture, vec2(offset.y, offset.w) *
+    vec4 sample3 = texture(tex, vec2(offset.y, offset.w) *
 texscale);
 
     float sx = s.x / (s.x + s.y);
@@ -56,4 +50,11 @@ texscale);
         mix(sample3, sample2, sx),
         mix(sample1, sample0, sx), sy);
 }
+
+void main(void) {
+  //vec3 c = texture(uTexture0, vUV).rgb;
+  vec4 c = sampleTextureBiCubic(uTexture0, vUV, vec2(1.0, 1.0));
+  color = c;
+}
+
 

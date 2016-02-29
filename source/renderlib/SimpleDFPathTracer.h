@@ -59,6 +59,7 @@ namespace renderlib {
     
     Mesh* _mesh;
     Shader* _shader;
+    Shader* _filterShader;
     vmath::Matrix4 _mvp;
     glm::mat4 _m;
     glm::mat4 _mInverse;
@@ -98,6 +99,7 @@ namespace renderlib {
     Texture _texture;
     RenderTexture* _renderTexture0{nullptr};
     RenderTexture* _renderTexture1{nullptr};
+    RenderTexture* _downsampledTexture{nullptr};
     glm::vec2 _mousePos;
   };
 

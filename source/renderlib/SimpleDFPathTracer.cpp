@@ -34,6 +34,7 @@ SimpleDFPathTracer::SimpleDFPathTracer()
   _lightingIDX = 0;
   _renderTexture0 = new RenderTexture();
   _renderTexture1 = new RenderTexture();
+  _downsampledTexture = new RenderTexture();
   
 }
 
@@ -41,6 +42,9 @@ SimpleDFPathTracer::~SimpleDFPathTracer()
 {
   delete _renderTexture0;
   delete _renderTexture1;
+  delete _downsampledTexture;
+  delete _shader;
+  delete _filterShader;
 }
   
 void SimpleDFPathTracer::resetFBOs()
@@ -77,6 +81,11 @@ void SimpleDFPathTracer::init()
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
   
+  _filterShader = new Shader();
+  _filterShader->registerShader("shaders/bicubicFilter.vert", ShaderType::VERTEX);
+  _filterShader->registerShader("shaders/bicubicFilter.frag", ShaderType::FRAGMENT);
+  _filterShader->compileShaders();
+  _filterShader->linkShaders();
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
@@ -124,6 +133,8 @@ void SimpleDFPathTracer::init()
 
   _renderTexture1->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
   _renderTexture1->setupFullscreenData();
+  _downsampledTexture->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
+  _downsampledTexture->setupDebugData(Vector2(0.25, 0.25), Vector2(1.0, 1.0));
 }
 
 void SimpleDFPathTracer::update(float time)
@@ -192,6 +203,8 @@ void SimpleDFPathTracer::draw()
   
   _mesh->drawBuffers();
   _shader->unbind();
+  
+  
 
 // FIXME:  Create signed dist field.
   //FIXME: Create test cases for sphere
@@ -207,6 +220,20 @@ void SimpleDFPathTracer::draw()
   _renderTexture0->drawFullscreen();
   //_texture.debugDraw();
   
+  //Now create and draw a downsampled image
+  
+  //draw the full res texture to a 96x96 FBO using a bicubicInterpolation shader
+  _filterShader->bind();
+  _downsampledTexture->bindFBO();
+  _renderTexture0->bindTargetToChannel(0);
+  _filterShader->setUniform("uTexture0",0);
+  _renderTexture0->drawFullscreen();
+  _filterShader->unbind();
+  _downsampledTexture->unbindFBO();
+  
+  
+  //Now draw the downsampled texture to the screen's upper right corner
+  _downsampledTexture->debugDraw();
   glEnable(GL_DEPTH_TEST);
   
   
