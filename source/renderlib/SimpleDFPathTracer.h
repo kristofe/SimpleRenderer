@@ -101,6 +101,7 @@ namespace renderlib {
     RenderTexture* _renderTexture1{nullptr};
     RenderTexture* _downsampledTexture{nullptr};
     bool _drawDownsampled{true};
+    bool _stretchImage{false};
     glm::vec2 _mousePos;
   };
 

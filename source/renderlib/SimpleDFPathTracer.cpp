@@ -231,14 +231,20 @@ void SimpleDFPathTracer::draw()
     _filterShader->unbind();
     _downsampledTexture->unbindFBO();
     
-    
-    //Now draw the downsampled texture to the screen's upper right corner
-    float imageScale = (int)_screenDim.x /(96*3);
-    if(imageScale < 1.0f) imageScale = 1.0f;
-    
-    
-    int dim = 96*imageScale;
-    _downsampledTexture->debugDraw(glm::ivec4(_screenDim.x-dim,_screenDim.y-dim,dim,dim));
+  
+    if(!_stretchImage)
+    {
+      //Now draw the downsampled texture to the screen's upper right corner
+      float imageScale = (int)_screenDim.x /(96*3);
+      if(imageScale < 1.0f) imageScale = 1.0f;
+      
+      
+      int dim = 96*imageScale;
+      _downsampledTexture->debugDraw(glm::ivec4(_screenDim.x-dim,_screenDim.y-dim,dim,dim));
+    }
+    else{
+      _downsampledTexture->debugDraw(glm::ivec4(0,0,_screenDim.x,_screenDim.y));
+    }
   }
   
   
@@ -275,7 +281,14 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'D' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-    _drawDownsampled = !_drawDownsampled;
+	  if (key.mod & GLFW_MOD_SHIFT != 0)
+    {
+      _stretchImage = ! _stretchImage;
+    }
+    else
+    {
+      _drawDownsampled = !_drawDownsampled;
+    }
   }
   
   if(key.key == 'Z' && key.action == KeyInfo::KeyAction::RELEASE)
