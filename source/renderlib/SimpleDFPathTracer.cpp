@@ -212,7 +212,7 @@ void SimpleDFPathTracer::draw()
   {
     //saveScreenShotTGA("screencap.tga", _currentResolution.x, _currentResolution.y);
 	  saveScreenShotPNG("screencap.png", _currentResolution.x, _currentResolution.y);
-	  _saveFrame = false;
+	  _saveFrame = false || _drawDownsampled;
   }
 
   _renderTexture0->unbindFBO();
@@ -229,8 +229,12 @@ void SimpleDFPathTracer::draw()
     _filterShader->setUniform("uTexture0",0);
     _renderTexture0->drawFullscreen();
     _filterShader->unbind();
+    if (_saveFrame)
+    {
+      saveScreenShotPNG("screencap96x96.png", _imageDim.x, _imageDim.y);
+      _saveFrame = false;
+    }
     _downsampledTexture->unbindFBO();
-    
   
     if(!_stretchImage)
     {
