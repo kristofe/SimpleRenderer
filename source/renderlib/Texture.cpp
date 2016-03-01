@@ -445,6 +445,30 @@ void Texture::debugDraw()
 
   _debugShader->unbind();
 }
+  
+void Texture::debugDraw(glm::ivec4 viewport)
+{
+
+  if(_debugMesh == nullptr) return;
+  
+  _debugShader->bind();
+
+  bindToChannel(0);
+  
+  _debugShader->setUniform("uTexture0",0);
+  _debugShader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
+  _debugShader->setUniform("uTimeScale", 0.5f);
+  
+  int cachedViewport[4];
+  glGetIntegerv(GL_VIEWPORT, cachedViewport);
+  glViewport(viewport.x,viewport.y, viewport.z, viewport.w);
+  GetGLError();
+  _debugMesh->drawBuffers();
+  glViewport(cachedViewport[0], cachedViewport[1],
+             cachedViewport[2], cachedViewport[3]);
+  GetGLError();
+  _debugShader->unbind();
+}
 
 void Texture::setupDebugData(Vector2 min, Vector2 max)
 {

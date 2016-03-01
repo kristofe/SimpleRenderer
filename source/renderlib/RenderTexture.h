@@ -46,6 +46,7 @@ public:
   void setFBOSize(int w, int h);
 
   void debugDraw();
+  void debugDraw(glm::ivec4 viewport);
   void setupDebugData(Vector2 min, Vector2 max);
 
   void drawFullscreen();

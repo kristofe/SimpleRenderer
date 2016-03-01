@@ -116,7 +116,27 @@ void RenderTexture::debugDraw()
 
   _debugShader->unbind();
 }
-
+ void RenderTexture::debugDraw(glm::ivec4 viewport)
+  {
+    
+    if(_debugMesh == nullptr) return;
+    
+    _debugShader->bind();
+    
+    bindAllTargetsStartingAt(0);
+    
+    _debugShader->setUniform("uTexture0",0);
+    
+    int cachedViewport[4];
+    glGetIntegerv(GL_VIEWPORT, cachedViewport);
+    glViewport(viewport.x,viewport.y, viewport.z, viewport.w);
+    GetGLError();
+    _debugMesh->drawBuffers();
+    glViewport(cachedViewport[0], cachedViewport[1],
+               cachedViewport[2], cachedViewport[3]);
+    GetGLError();
+    _debugShader->unbind();
+}
 void RenderTexture::setupDebugData(Vector2 min, Vector2 max)
 {
 	if (_debugShader != nullptr)

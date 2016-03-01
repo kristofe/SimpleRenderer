@@ -134,7 +134,7 @@ void SimpleDFPathTracer::init()
   _renderTexture1->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
   _renderTexture1->setupFullscreenData();
   _downsampledTexture->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
-  _downsampledTexture->setupDebugData(Vector2(0.25, 0.25), Vector2(1.0, 1.0));
+  _downsampledTexture->setupDebugData(Vector2(-1.0, -1.0), Vector2(1.0, 1.0));
 }
 
 void SimpleDFPathTracer::update(float time)
@@ -218,26 +218,34 @@ void SimpleDFPathTracer::draw()
   _renderTexture0->unbindFBO();
 
   _renderTexture0->drawFullscreen();
-  //_texture.debugDraw();
   
-  //Now create and draw a downsampled image
+  if(_drawDownsampled)
+  {
+    //Now create and draw a downsampled image
+    //draw the full res texture to a 96x96 FBO using a bicubicInterpolation shader
+    _filterShader->bind();
+    _downsampledTexture->bindFBO();
+    _renderTexture0->bindTargetToChannel(0);
+    _filterShader->setUniform("uTexture0",0);
+    _renderTexture0->drawFullscreen();
+    _filterShader->unbind();
+    _downsampledTexture->unbindFBO();
+    
+    
+    //Now draw the downsampled texture to the screen's upper right corner
+    float imageScale = (int)_screenDim.x /(96*3);
+    if(imageScale < 1.0f) imageScale = 1.0f;
+    
+    
+    int dim = 96*imageScale;
+    _downsampledTexture->debugDraw(glm::ivec4(_screenDim.x-dim,_screenDim.y-dim,dim,dim));
+  }
   
-  //draw the full res texture to a 96x96 FBO using a bicubicInterpolation shader
-  _filterShader->bind();
-  _downsampledTexture->bindFBO();
-  _renderTexture0->bindTargetToChannel(0);
-  _filterShader->setUniform("uTexture0",0);
-  _renderTexture0->drawFullscreen();
-  _filterShader->unbind();
-  _downsampledTexture->unbindFBO();
   
-  
-  //Now draw the downsampled texture to the screen's upper right corner
-  _downsampledTexture->debugDraw();
   glEnable(GL_DEPTH_TEST);
   
   
-  //swap the render targets and update the sample count
+  //swap the render targets
   RenderTexture* tmp = _renderTexture0;
   _renderTexture0 = _renderTexture1;
   _renderTexture1 = tmp;
@@ -265,6 +273,11 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 	  _useScreenResolution = !_useScreenResolution;
 	  resize();
   }
+  if(key.key == 'D' && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+    _drawDownsampled = !_drawDownsampled;
+  }
+  
   if(key.key == 'Z' && key.action == KeyInfo::KeyAction::RELEASE)
   {
 	  if (key.mod & GLFW_MOD_SHIFT != 0)
