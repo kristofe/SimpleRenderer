@@ -5,6 +5,7 @@ in vec2 uv;
 in vec4 tangent;
 in vec4 color;
 
+
 out vec2 vUV;
 
 void main(void) {

@@ -220,11 +220,11 @@ Mesh* RenderTexture::_fullscreenMesh = nullptr;
 
 void RenderTexture::drawFullscreen()
 {
-	_fullscreenShader->bind();
-	bindTargetToChannel(0, FBOProxy::ATTACHMENT::COLOR_ATTACHMENT0);
+ 	_fullscreenShader->bind();
+ 	bindTargetToChannel(0, FBOProxy::ATTACHMENT::COLOR_ATTACHMENT0);
 	_fullscreenShader->setUniform("uTexture0", 0);
 	_fullscreenMesh->drawBuffers();
-//	unbind();
+  
 	_fullscreenShader->unbind();
 }
 

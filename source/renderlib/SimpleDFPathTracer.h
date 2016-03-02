@@ -100,6 +100,7 @@ namespace renderlib {
     RenderTexture* _renderTexture0{nullptr};
     RenderTexture* _renderTexture1{nullptr};
     RenderTexture* _downsampledTexture{nullptr};
+    Mesh* _fullscreenMesh;
     bool _drawDownsampled{true};
     bool _stretchImage{false};
     glm::vec2 _mousePos;

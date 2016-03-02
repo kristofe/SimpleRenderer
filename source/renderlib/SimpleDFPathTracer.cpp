@@ -81,11 +81,16 @@ void SimpleDFPathTracer::init()
   _mesh->createScreenQuad(Vector2(-1.0f, -1.0f), Vector2(1.0f, 1.0f));
   _mesh->bindAttributesToVAO(*_shader);
   
+  _fullscreenMesh = new Mesh();
+  _fullscreenMesh->createScreenQuad(Vector2(-1.0f, -1.f), Vector2(1.0f, 1.0f));
   _filterShader = new Shader();
-  _filterShader->registerShader("shaders/bicubicFilter.vert", ShaderType::VERTEX);
-  _filterShader->registerShader("shaders/bicubicFilter.frag", ShaderType::FRAGMENT);
+  _filterShader->registerShader("shaders/lanczosFilter.vert", ShaderType::VERTEX);
+  _filterShader->registerShader("shaders/lanczosFilter.frag", ShaderType::FRAGMENT);
+  //_filterShader->registerShader("shaders/bicubicFilter.vert", ShaderType::VERTEX);
+  //_filterShader->registerShader("shaders/bicubicFilter.frag", ShaderType::FRAGMENT);
   _filterShader->compileShaders();
   _filterShader->linkShaders();
+  _fullscreenMesh->bindAttributesToVAO(*_filterShader);
 
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
@@ -222,13 +227,16 @@ void SimpleDFPathTracer::draw()
   if(_drawDownsampled)
   {
     //Now create and draw a downsampled image
-    //draw the full res texture to a 96x96 FBO using a bicubicInterpolation shader
+    //draw the full res texture to a 96x96 FBO using a filtering shader
     _filterShader->bind();
     _downsampledTexture->bindFBO();
     _renderTexture0->bindTargetToChannel(0);
-    _filterShader->setUniform("uTexture0",0);
-    _renderTexture0->drawFullscreen();
+    _filterShader->setUniform("inputImageTexture",0);
+    _filterShader->setUniform("textureWidth",_imageDim.x);
+    _filterShader->setUniform("textureHeight",_imageDim.y);
+    _fullscreenMesh->drawBuffers();
     _filterShader->unbind();
+    
     if (_saveFrame)
     {
       saveScreenShotPNG("screencap96x96.png", _imageDim.x, _imageDim.y);
