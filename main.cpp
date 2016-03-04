@@ -145,7 +145,7 @@ static void mouseButtonHandler(GLFWwindow* window, int button, int action, int m
   else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
   {
       mouseRightDown = true;
-      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 0, 1.0f, 0.0f);
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 0, 1.0f, 0.0f);
       //trackball->ReturnHome();
   }
   else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
@@ -157,7 +157,7 @@ static void mouseButtonHandler(GLFWwindow* window, int button, int action, int m
   else if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
   {
       mouseMiddleDown = true;
-      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 0, 0.0f, 1.0f);
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 0, 0.0f, 1.0f);
       //trackball->ReturnHome();
   }
   else if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE)
@@ -205,6 +205,11 @@ void resizeViewport(GLFWwindow* window){
 
 static void windowResizeHandler(GLFWwindow* window, int width, int height)
 {
+  //Forcing square window
+  int size = width;
+  if(size > height) size = height;
+  glfwSetWindowSize(window, size, size);
+  
   resizeViewport(window);
   renderer->onWindowResize(window, width, height);
 }

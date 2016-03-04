@@ -155,7 +155,7 @@ void SimpleDFPathTracer::update(float time)
   _m = glm::mat4_cast(q);
   _mInverse = glm::inverse(_m);
 
-  float elevation = -_elevations[_elevationIDX];
+  float elevation = -_elevations[_elevationIDX] - 10.0f;
   float elevationRadians = glm::radians(elevation);
   vec3 EulerAnglesElevation(elevationRadians, 0,  0);
   quat qElevation = quat(EulerAnglesElevation);
@@ -401,7 +401,9 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
   {
     _currLights[lidx].x += pi.velocity.x;
     _currLights[lidx].z += pi.velocity.y;
-    printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+
+    printf("ldown - light%d: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+           lidx,
            _currLights[lidx].x,
            _currLights[lidx].y,
            _currLights[lidx].z,
@@ -409,12 +411,13 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
            _currLightColors[lidx].x);
     resetFBOs();
   }
-  if(pi.rdown && pi.dragging)
+  if(pi.rdown && pi.dragging && !InputManager::getALTDown())
   {
     //Light height = right drag vertical
-    _currLights[lidx].y += pi.velocity.x;
+    _currLights[lidx].y += -pi.velocity.x;
     
-    printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+    printf("rdown light%d: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+           lidx,
            _currLights[lidx].x,
            _currLights[lidx].y,
            _currLights[lidx].z,
@@ -422,7 +425,7 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
            _currLightColors[lidx].x);
     resetFBOs();
   }
-  if(pi.wdown && pi.dragging)
+  if(pi.rdown && pi.dragging && InputManager::getALTDown())
   {
     //Intensity = middle drag horizontal
     float c = _currLightColors[lidx].x;
@@ -431,7 +434,8 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
     //Size = middle drag vertical
     _currLights[lidx].w += pi.velocity.y;
     
-    printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+    printf("wdown - light%d: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+           lidx,
            _currLights[lidx].x,
            _currLights[lidx].y,
            _currLights[lidx].z,
