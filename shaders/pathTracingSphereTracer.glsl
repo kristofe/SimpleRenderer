@@ -42,7 +42,7 @@ uniform float uTargetHeight;
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
 //#define WHITECOLOR vec3(.7295, .7355, .729)*0.9
-#define WHITECOLOR vec3(1., 1., 1.)*0.4
+#define WHITECOLOR vec3(1., 1., 1.)*0.45
 #define FLOORCOLOR vec3(1., 1., 1.) * 0.8
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
