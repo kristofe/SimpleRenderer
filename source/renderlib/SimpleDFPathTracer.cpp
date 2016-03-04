@@ -296,7 +296,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'D' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if (key.mod & GLFW_MOD_SHIFT != 0)
+    if (false == InputManager::getShiftDown())
     {
       _stretchImage = ! _stretchImage;
     }
@@ -308,7 +308,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   
   if(key.key == 'Z' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if (key.mod & GLFW_MOD_SHIFT != 0)
+    if (false == InputManager::getShiftDown())
 	  {
 		  if (++_elevationIDX >= (unsigned)_elevations.size())
 		  {
@@ -327,7 +327,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'X' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if ((key.mod & GLFW_MOD_SHIFT) != 0)
+    if (false == InputManager::getShiftDown())
 	  {
 		  if (++_azimuthIDX >= (unsigned)_azimuths.size())
 		  {
@@ -345,7 +345,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   }
   if(key.key == 'C' && key.action == KeyInfo::KeyAction::RELEASE)
   {
-	  if ((key.mod & GLFW_MOD_SHIFT) == 0)
+    if (false == InputManager::getShiftDown())
 	  {
 		  if (++_lightingIDX >= (int)_lighting.size())
 		  {
@@ -365,15 +365,6 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 		_lightSwitching[_lightingIDX][0],
 		_lightSwitching[_lightingIDX][1]
 		);
-	/*
-    printf("%1f, %1f, %1f, %1f, %1f, %1f\n",
-           _lightSwitching[_lightingIDX][0],
-           _lightSwitching[_lightingIDX][1],
-           _lightSwitching[_lightingIDX][2],
-           _lightSwitching[_lightingIDX][3],
-           _lightSwitching[_lightingIDX][4],
-           _lightSwitching[_lightingIDX][5]);
-    */
     resetFBOs();
   }
   if(key.key == ' ' && key.action == KeyInfo::KeyAction::PRESS)
@@ -401,7 +392,50 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   
 void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
 {
-  _mousePos = pointers[0].pos;
+  PointerInfo& pi = pointers[0];
+  _mousePos = pi.pos;
+  if(pi.down)
+  {
+    _currLights[0].x += pi.velocity.x;
+    _currLights[0].y += pi.velocity.y;
+    printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+           _currLights[0].x,
+           _currLights[0].y,
+           _currLights[0].z,
+           _currLights[0].w,
+           _currLightColors[0].x);
+    resetFBOs();
+  }
+  if(pi.rdown)
+  {
+    _currLights[0].z += pi.velocity.x;
+    _currLights[0].w += pi.velocity.y;
+    
+    printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+           _currLights[0].x,
+           _currLights[0].y,
+           _currLights[0].z,
+           _currLights[0].w,
+           _currLightColors[0].x);
+    resetFBOs();
+  }
+  if(pi.wdown)
+  {
+    float c = _currLightColors[0].x;
+    _currLightColors[0] = vec3(pi.velocity.y+c);
+    
+    printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
+           _currLights[0].x,
+           _currLights[0].y,
+           _currLights[0].z,
+           _currLights[0].w,
+           _currLightColors[0].x);
+    resetFBOs();
+  }
+  
+  
+  
+  
 }
 
 }// namespace renderlib

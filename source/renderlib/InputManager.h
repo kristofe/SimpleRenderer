@@ -20,8 +20,11 @@ struct PointerInfo
   vec2 pos{0.0f, 0.0f};
   vec2 lastPos{0.0f, 0.0f};
   bool   down;
+  bool   rdown;
+  bool   wdown;
   bool   peakHit;
   bool   hasPeaked;
+  float  wheelVel;
   float   dragging;
   float   pressure;
   float   maxPressure;
@@ -40,6 +43,9 @@ struct PointerInfo
     lastPos = vec2(0,0);
     velocity = vec2(0,0);
     down = false;
+    rdown = false;
+    wdown = false;
+    wheelVel = 0.0f;
     peakHit = false;
     hasPeaked = false;
     dragging = 0.0f;
@@ -57,6 +63,8 @@ struct PointerInfo
     this->pos = other.pos;
     this->lastPos = other.lastPos;
     this->down = other.down;
+    this->rdown = other.rdown;
+    this->wdown = other.wdown;
     this->peakHit = other.peakHit;
     this->hasPeaked = other.hasPeaked;
     this->dragging = other.dragging;
@@ -64,6 +72,7 @@ struct PointerInfo
     this->maxPressure = other.maxPressure;
     this->majorAxis = other.majorAxis;
     this->minorAxis = other.minorAxis;
+    this->wheelVel = other.wheelVel;
     this->velocity = other.velocity;
     this->width = other.width;
     this->id = other.id;
@@ -124,13 +133,25 @@ public:
 
 }; 
 
+class MouseWheelInfo
+{
+public:
+  float _xOffset;
+  float _yOffset;
+  float _lastXOffset;
+  float _lastYOffset;
+  glm::vec2 _velocity;
+  float _lastUpdateTime;
+  
+};
   
   
 class InputManager{
 public:
   static void init();
+  static void handleScroll(float xdir, float ydir);
   static void updatePointer(vec2 pos, bool down, float dragging,
-                            float pressure, float id);
+                            float pressure, float id, bool rdown =false, bool wdown = false);
   static void updatePointer(PointerInfo& pi);
   static void clearPointers();
   static void addListener(std::shared_ptr<IControllable> c);
@@ -157,6 +178,7 @@ private:
   static bool _ctrlDown;
   static bool _altDown;
   static unsigned long _frame;
+  static MouseWheelInfo _mouseWheel;
   
 };
 

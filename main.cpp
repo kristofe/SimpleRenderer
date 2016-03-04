@@ -41,6 +41,7 @@ ivec2 windowPosition{0,0};
 ivec2 mousePosition;
 bool mouseDown{false};
 bool mouseRightDown{false};
+bool mouseMiddleDown{false};
 
 GLFWwindow * window{ nullptr };
 unsigned int frame{ 0 };
@@ -131,27 +132,39 @@ static void keyHandler(GLFWwindow* window, int key, int scancode, int action, in
 
 static void mouseButtonHandler(GLFWwindow* window, int button, int action, int mods)
 {
-  if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS)
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
   {
       mouseDown = true;
       InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 0);
   }
-  else if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_RELEASE)
+  else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
   {
       mouseDown = false;
       InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 0);
   }
-  else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_PRESS)
+  else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
   {
       mouseRightDown = true;
-      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 1);
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 0, 1.0f, 0.0f);
       //trackball->ReturnHome();
   }
-  else if (button == GLFW_MOUSE_BUTTON_2 && action == GLFW_RELEASE)
+  else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
   {
 
       mouseRightDown = false;
-      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 1);
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 0, 0.0f, 0.0f);
+  }
+  else if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
+  {
+      mouseMiddleDown = true;
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),1.0f, 0.0f, 1.0f, 0, 0.0f, 1.0f);
+      //trackball->ReturnHome();
+  }
+  else if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE)
+  {
+
+      mouseMiddleDown = false;
+      InputManager::updatePointer(vec2(mousePosition.x,mousePosition.y),0.0f, 0.0f, 1.0f, 0, 0.0f, 0.0f);
   }
 
   renderer->onMouseButton(button, action, mods);
@@ -162,14 +175,17 @@ static void mousePositionHandler(GLFWwindow* window, double x, double y)
     if(mousePosition.x != (int)x || mousePosition.y != (int)y){
     mousePosition.x = (int)x;
     mousePosition.y = (int)y;
-    if(mouseDown)
+    if(mouseDown || mouseRightDown || mouseMiddleDown)
     {
       InputManager::updatePointer(
           vec2(mousePosition.x,mousePosition.y),
+          mouseDown?1.0f:0.0f,
           1.0f, 
           1.0f, 
-          1.0f, 
-          0);
+          0,
+          mouseRightDown?1.0f:0.0f,
+          mouseMiddleDown?1.0f:0.0f
+      );
     }
   }
   renderer->onMouseMove(x,y);
@@ -178,6 +194,7 @@ static void mousePositionHandler(GLFWwindow* window, double x, double y)
 static void mouseScrollHandler(GLFWwindow* window, double xoffset, double yoffset)
 {
   renderer->onMouseScroll(xoffset, yoffset);
+  InputManager::handleScroll((float)xoffset, (float)yoffset);
 }
 
 void resizeViewport(GLFWwindow* window){

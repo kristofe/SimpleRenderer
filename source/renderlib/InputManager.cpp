@@ -14,6 +14,7 @@ bool InputManager::_ctrlDown;
 bool InputManager::_shiftDown;
 bool InputManager::_altDown;
 unsigned long InputManager::_frame;
+MouseWheelInfo InputManager::_mouseWheel;
   
 
 void InputManager::init()
@@ -29,10 +30,26 @@ void InputManager::init()
   InputManager::_shiftDown = false;
   InputManager::_altDown = false;
   InputManager::_frame = 0;
+  InputManager::_mouseWheel._lastUpdateTime = GLFWTime::getCurrentTime();
 }
-
+  
+void InputManager::handleScroll(float xdir, float ydir)
+{
+  
+  MouseWheelInfo& mwi = InputManager::_mouseWheel;
+  float dt = GLFWTime::getCurrentTime() - mwi._lastUpdateTime;
+  mwi._lastXOffset = mwi._xOffset;
+  mwi._lastYOffset = mwi._yOffset;
+  mwi._xOffset = xdir;
+  mwi._yOffset = ydir;
+  mwi._velocity = glm::vec2(
+                    dt * (mwi._xOffset - mwi._lastXOffset),
+                    dt * (mwi._yOffset - mwi._lastYOffset));
+  
+}
+  
 void InputManager::updatePointer(vec2 pos, bool down, float dragging,
-                          float pressure, float id)
+                          float pressure, float id, bool rdown, bool wdown)
 {
   if(id < 0 || id >= 10) return;
   PointerInfo& lastPI = InputManager::_pointers[(int)id];
@@ -44,6 +61,8 @@ void InputManager::updatePointer(vec2 pos, bool down, float dragging,
   pi.lastPos = lastPI.pos;
     
   pi.down = down;
+  pi.rdown = rdown;
+  pi.wdown = wdown;
   pi.dragging = dragging;
   pi.pressure = pressure;
   pi.id = (int)id;
