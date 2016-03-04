@@ -35,6 +35,7 @@ SimpleDFPathTracer::SimpleDFPathTracer()
   _renderTexture0 = new RenderTexture();
   _renderTexture1 = new RenderTexture();
   _downsampledTexture = new RenderTexture();
+  setLightingArrays(_lightingIDX);
   
 }
 
@@ -203,7 +204,9 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uCameraPosition", _cameraPosition);
   _shader->setUniform("uObjectOffset", _trans);
   _shader->setUniform("uCameraMatrix", _cameraMatrix);
-  _shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],6);
+  //_shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],6);
+  _shader->setUniform("lights", _currLights,2);
+  _shader->setUniform("lightColors", _currLightColors,2);
   _shader->setUniform("uTargetHeight", _targetHeight);
   
   _mesh->drawBuffers();
@@ -357,6 +360,12 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
 		  }
 
 	  }
+    setLightingArrays(_lightingIDX);
+	printf("%d, %d\n",
+		_lightSwitching[_lightingIDX][0],
+		_lightSwitching[_lightingIDX][1]
+		);
+	/*
     printf("%1f, %1f, %1f, %1f, %1f, %1f\n",
            _lightSwitching[_lightingIDX][0],
            _lightSwitching[_lightingIDX][1],
@@ -364,6 +373,7 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
            _lightSwitching[_lightingIDX][3],
            _lightSwitching[_lightingIDX][4],
            _lightSwitching[_lightingIDX][5]);
+    */
     resetFBOs();
   }
   if(key.key == ' ' && key.action == KeyInfo::KeyAction::PRESS)

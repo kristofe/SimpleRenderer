@@ -47,6 +47,14 @@ namespace renderlib {
     virtual void handlePointer(std::vector<PointerInfo>& pointers);
     uint32_t getID() { return _id;};
 
+	void setLightingArrays(int idx) {
+		for (int i = 0; i < 2; i++)
+		{
+			_currLights[i] = _lights[_lightSwitching[idx][i]];
+			_currLightColors[i] = _lightColors[_lightSwitching[idx][i]];
+		}
+	}
+
     //C++ 11 way of hiding these methods
     //no copy constructor or copy assignment operato
     SimpleDFPathTracer(const SimpleDFPathTracer&) = delete;
@@ -77,14 +85,38 @@ namespace renderlib {
     glm::vec3 _trans, _min, _max;
     float _targetHeight;
   
-  float _lightSwitching[6][6] = {
-      {1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-      {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f}
+    int _lightSwitching[7][2] = {
+	  {0, 1},
+	  {0, 6},
+	  {1, 6},
+	  {2, 6},
+	  {3, 6},
+	  {4, 6},
+	  {5, 6}
     };
+	glm::vec4 _lights[7] = {
+		vec4(0.5, 3.2, -0.4, 1.0),
+		vec4(-1.0, 1.0, 2.2,  4.0),//Correct!!! 
+		vec4(-0.0, 3.0, 2.0, 0.65),
+		vec4(-0.0, 3.0, 2.0, 0.65),
+		vec4(-0.0, 3.0, 2.0, 0.65),
+		vec4(0.2, 4.0, -2.0, 2.0),
+		vec4(0.0, 0.0, 0.0, 0.0)
+	};
+	glm::vec3 _lightColors[7] = {
+		vec3(1.3),
+		vec3(0.6),
+		vec3(0.1),
+		vec3(0.1),
+		vec3(0.1),
+		vec3(0.1),
+		vec3(0.0)
+
+	};
+
+	glm::vec4 _currLights[2];
+	glm::vec3 _currLightColors[2];
+
     Model _model;
 
 	std::vector<std::string> categories{ "animal","human", "plane", "truck", "car" };
