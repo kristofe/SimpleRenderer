@@ -394,42 +394,49 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
 {
   PointerInfo& pi = pointers[0];
   _mousePos = pi.pos;
-  if(pi.down)
+  int lidx = 0;
+  if(InputManager::getShiftDown())
+    lidx = 1;
+  if(pi.down && pi.dragging)
   {
-    _currLights[0].x += pi.velocity.x;
-    _currLights[0].y += pi.velocity.y;
+    _currLights[lidx].x += pi.velocity.x;
+    _currLights[lidx].z += pi.velocity.y;
     printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
-           _currLights[0].x,
-           _currLights[0].y,
-           _currLights[0].z,
-           _currLights[0].w,
-           _currLightColors[0].x);
+           _currLights[lidx].x,
+           _currLights[lidx].y,
+           _currLights[lidx].z,
+           _currLights[lidx].w,
+           _currLightColors[lidx].x);
     resetFBOs();
   }
-  if(pi.rdown)
+  if(pi.rdown && pi.dragging)
   {
-    _currLights[0].z += pi.velocity.x;
-    _currLights[0].w += pi.velocity.y;
+    //Light height = right drag vertical
+    _currLights[lidx].y += pi.velocity.x;
     
     printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
-           _currLights[0].x,
-           _currLights[0].y,
-           _currLights[0].z,
-           _currLights[0].w,
-           _currLightColors[0].x);
+           _currLights[lidx].x,
+           _currLights[lidx].y,
+           _currLights[lidx].z,
+           _currLights[lidx].w,
+           _currLightColors[lidx].x);
     resetFBOs();
   }
-  if(pi.wdown)
+  if(pi.wdown && pi.dragging)
   {
-    float c = _currLightColors[0].x;
-    _currLightColors[0] = vec3(pi.velocity.y+c);
+    //Intensity = middle drag horizontal
+    float c = _currLightColors[lidx].x;
+    _currLightColors[lidx] = vec3(pi.velocity.x+c);
+    
+    //Size = middle drag vertical
+    _currLights[lidx].w += pi.velocity.y;
     
     printf("light0: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
-           _currLights[0].x,
-           _currLights[0].y,
-           _currLights[0].z,
-           _currLights[0].w,
-           _currLightColors[0].x);
+           _currLights[lidx].x,
+           _currLights[lidx].y,
+           _currLights[lidx].z,
+           _currLights[lidx].w,
+           _currLightColors[lidx].x);
     resetFBOs();
   }
   
