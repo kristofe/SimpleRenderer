@@ -547,14 +547,37 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 // main
 //-----------------------------------------------------
 void main() {
+/*
+	float mx = max( resolution.x, resolution.y );
+	vec2 uv = gl_FragCoord.xy/mx;
+	
+	// center image
+	uv += (1.-resolution.xy/mx)/2.;
+	
+	//     screen
+	//      /|     ___
+	//     / p    /   \
+	//    /  |   |     |     ^ y
+	// eye  -0-  |     |     |
+	//    \  |   |     |     |
+	//     \ |    \___/      o---> z
+	//      \|                \
+	//                         x
+	//
+	// -0- marks the origin point (0,0,0) - middle of the screen
+	
+	vec3 p = vec3((uv-.5)*2., 0);
+	vec3 eye = vec3(0,0,-5); // z coord is the focal length
+	vec3 dir = normalize(p-eye); // ray direction
+*/
   vec2 fragCoord = gl_FragCoord.xy;
-	vec2 q = fragCoord.xy / iResolution.xy;
+  vec2 q = fragCoord.xy / iResolution.xy;
     
   //-----------------------------------------------------
   // camera
   //-----------------------------------------------------
-  vec2 p = -1.0 + 2.0 * (fragCoord.xy) / iResolution.xy;
-  p.x *= iResolution.x/iResolution.y;
+  vec2 p = -1.0 + 2.0 * (fragCoord.xy) / iResolution.xy;//translates coord to [-1,1]
+  p.x *= iResolution.x/iResolution.y;//Aspect ratio adjustment
 
 #ifdef ANIMATENOISE
   seed = p.x + p.y * 3.43121412313 + fract(1.12345314312*iGlobalTime);
@@ -562,14 +585,7 @@ void main() {
   seed = p.x + p.y * 3.43121412313;
 #endif
   vec3 ro = uCameraPosition;
-  //vec3 ro = vec3(0.0, 0.0, 1.0);
-  //vec3 ta = vec3(0.0, 0.5,  0.0);//target point
   vec3 ta = vec3(0.0, uTargetHeight,  0.0);//target point
-  /*
-  vec3 ww = normalize(vec3(uCameraMatrix[2]));
-  vec3 uu = normalize(vec3(uCameraMatrix[0]));
-  vec3 vv = normalize(vec3(uCameraMatrix[1]));
-  */
 
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
@@ -584,7 +600,7 @@ void main() {
   vec3 uvw = vec3(0.0);
 
   for( int a=0; a<SAMPLES; a++ ) {
-    vec2 rpof = 4.*(hash2()-vec2(0.5)) / iResolution.xy;
+    vec2 rpof = 1.*(hash2()-vec2(0.5)) / iResolution.xy;
     vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + 3.0*ww );
 
 #ifdef DOF

@@ -443,10 +443,6 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
            _currLightColors[lidx].x);
     resetFBOs();
   }
-  
-  
-  
-  
 }
 
 }// namespace renderlib
