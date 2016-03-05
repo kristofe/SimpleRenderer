@@ -97,7 +97,7 @@ namespace renderlib {
 	glm::vec4 _lights[7] = {
 		//vec4(0.5, 3.2, -0.4, 1.0),
 		vec4(0.26, 4.6, 0.2333, 1.086),
-		vec4(-1.0, 1.0, 2.2,  4.0),//Correct!!! 
+		vec4(-1.9, 3.35, 2.0,  1.56),//Correct!!! 
 		vec4(-0.0, 3.0, 2.0, 0.65),
 		vec4(-0.0, 3.0, 2.0, 0.65),
 		vec4(-0.0, 3.0, 2.0, 0.65),
@@ -106,7 +106,7 @@ namespace renderlib {
 	};
 	glm::vec3 _lightColors[7] = {
 		vec3(1.18),
-		vec3(0.6),
+		vec3(0.74),
 		vec3(0.1),
 		vec3(0.1),
 		vec3(0.1),

@@ -42,7 +42,7 @@ uniform float uTargetHeight;
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
 #define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
 //#define WHITECOLOR vec3(.7295, .7355, .729)*0.9
-#define WHITECOLOR vec3(1., 1., 1.)*0.45
+#define WHITECOLOR vec3(1., 1., 1.)*0.5
 #define FLOORCOLOR vec3(1., 1., 1.) * 0.8
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
@@ -518,11 +518,11 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
           */
 
 //FIXME: THIS NEEDS TO BE CLEANED UP AND TWEAKED
-          const float specularPower = 1.0;
-          const float ambient = 0.01;
+          const float specularPower = 2.0;
+          const float ambient = 0.00;
 
 		const vec3 diffuseColor = vec3(1.0);
-		const vec3 specColor = vec3(0.9);
+		const vec3 specColor = vec3(1.0);
 		vec3 lightDir = normalize(vec3(lights[lightID])- ro);
 
 		float lambertian = max(dot(lightDir,normal), 0.0);
@@ -533,7 +533,8 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 		float specAngle = max(dot(reflectDir, viewDir), 0.0);
 		float specular = pow(specAngle, specularPower);
 
-        tcol += fcol*lightColors[lightID]*(lambertian*diffuseColor +specular*specColor + vec3(ambient));
+        //tcol += fcol*lightColors[lightID]*(lambertian*diffuseColor +specular*specColor + vec3(ambient));
+        tcol += fcol*lightColors[lightID]*(lambertian*diffuseColor);
 
           //tcol += normal;
         }

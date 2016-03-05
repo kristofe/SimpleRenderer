@@ -411,10 +411,10 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
            _currLightColors[lidx].x);
     resetFBOs();
   }
-  if(pi.rdown && pi.dragging && !InputManager::getALTDown())
+  if(pi.rdown && pi.dragging && !InputManager::getCTRLDown())
   {
     //Light height = right drag vertical
-    _currLights[lidx].y += -pi.velocity.x;
+    _currLights[lidx].y += -pi.velocity.y;
     
     printf("rdown light%d: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
            lidx,
@@ -425,7 +425,7 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
            _currLightColors[lidx].x);
     resetFBOs();
   }
-  if(pi.rdown && pi.dragging && InputManager::getALTDown())
+  if(pi.rdown && pi.dragging && InputManager::getCTRLDown())
   {
     //Intensity = middle drag horizontal
     float c = _currLightColors[lidx].x;
