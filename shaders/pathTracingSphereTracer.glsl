@@ -579,6 +579,15 @@ void main() {
   vec2 p = -1.0 + 2.0 * (fragCoord.xy) / iResolution.xy;//translates coord to [-1,1]
   p.x *= iResolution.x/iResolution.y;//Aspect ratio adjustment
 
+  //FOV adjustment
+  const float verticalFOV = 40.0;
+  const float PI = 3.14159265359;
+  float theta = verticalFOV*PI/180.0;
+  float tanTheta = tan(theta/2.0);
+  p = p * tanTheta; //Scales the camera plane to fit fov at focal length 1
+
+
+
 #ifdef ANIMATENOISE
   seed = p.x + p.y * 3.43121412313 + fract(1.12345314312*iGlobalTime);
 #else
@@ -601,7 +610,7 @@ void main() {
 
   for( int a=0; a<SAMPLES; a++ ) {
     vec2 rpof = 1.*(hash2()-vec2(0.5)) / iResolution.xy;
-    vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + 3.0*ww );
+    vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + ww );
 
 #ifdef DOF
     vec3 fp = ro + rd * 12.0;
