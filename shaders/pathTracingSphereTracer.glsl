@@ -24,6 +24,7 @@ uniform vec3 uCameraPosition;
 uniform vec3 uObjectOffset;
 uniform mat4 uCameraMatrix;
 uniform float uTargetHeight;
+uniform float uVerticalCameraFOV;
 
 #define DFSCALING 0.6
 #define eps 0.0001
@@ -582,9 +583,9 @@ void main() {
   //-----------------------------------------------------
   //FOV adjustment
   //-----------------------------------------------------
-  const float verticalFOV = 40.0;
+  //const float verticalFOV = 30.0;
   const float PI = 3.14159265359;
-  float theta = verticalFOV*PI/180.0;
+  float theta = uVerticalCameraFOV*PI/180.0;
   float tanTheta = tan(theta/2.0);
   const float focalLength = 1.0;//if set to something to other than 1 it will break fov calculation
   p = p * tanTheta; //Scales the camera plane to fit fov at focal length 1

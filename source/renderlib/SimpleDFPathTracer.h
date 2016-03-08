@@ -64,6 +64,8 @@ namespace renderlib {
     int _renderSortValue;
     uint32_t _id;
     float _gridResolution;
+    float _cameraDistance{2.0f};
+    float _verticalCameraFOV{30.0f};
     
     Mesh* _mesh;
     Shader* _shader;

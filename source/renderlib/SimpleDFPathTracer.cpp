@@ -161,7 +161,7 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::vec3 camPos(0.0f, 0.0f, 2.0f);
+  glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
   _cameraPosition = mat3(elevationMatrix) * camPos;
   _cameraMatrix = elevationMatrix;
   
@@ -208,6 +208,8 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("lights", _currLights,2);
   _shader->setUniform("lightColors", _currLightColors,2);
   _shader->setUniform("uTargetHeight", _targetHeight);
+  _shader->setUniform("uVerticalCameraFOV", _verticalCameraFOV);
+  
   
   _mesh->drawBuffers();
   _shader->unbind();
@@ -280,7 +282,6 @@ void SimpleDFPathTracer::postRender()
 }
 void SimpleDFPathTracer::handleKey(KeyInfo& key)
 {
-  
   if(key.key >= '0' && key.key <= '9' && key.action == KeyInfo::KeyAction::RELEASE)
   {
     //char idx = key.key - '0';
@@ -293,6 +294,34 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   {
 	  _useScreenResolution = !_useScreenResolution;
 	  resize();
+  }
+  if(key.key == 262 && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+    float offset = InputManager::getShiftDown()?10.0f:5.0f;
+    _verticalCameraFOV = _verticalCameraFOV - offset;
+    resetFBOs();
+    printf("Camera FOV: %3.2f\n", _verticalCameraFOV);
+  }
+  if(key.key == 263 && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+    float offset = InputManager::getShiftDown()?10.0f:5.0f;
+    _verticalCameraFOV = _verticalCameraFOV + offset;
+    resetFBOs();
+    printf("Camera FOV: %3.2f\n", _verticalCameraFOV);
+  }
+  if(key.key == 265 && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+    float offset = InputManager::getShiftDown()?0.1f:0.01f;
+    _cameraDistance = _cameraDistance - offset;
+    resetFBOs();
+    printf("Camera Distance: %3.2f\n", _cameraDistance);
+  }
+  if(key.key == 264 && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+    float offset = InputManager::getShiftDown()?0.1f:0.01f;
+    _cameraDistance = _cameraDistance +offset;
+    resetFBOs();
+    printf("Camera Distance: %3.2f\n", _cameraDistance);
   }
   if(key.key == 'D' && key.action == KeyInfo::KeyAction::RELEASE)
   {
