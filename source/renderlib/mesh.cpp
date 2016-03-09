@@ -87,7 +87,7 @@ namespace renderlib
     for (Vertex v : _verts)
     {
       vec3 position(v.position.x, v.position.y, v.position.z);
-      position = position * xform;
+      position = xform*position;
       if (position.x < min.x)
         min.x = position.x;
       if (position.y < min.y)
@@ -996,7 +996,8 @@ namespace renderlib
 	glm::mat4 xform = glm::scale(glm::vec3(1.0f / (maxDim*1.1)));
     transformMesh(xform);
 
-    xform = xform * glm::translate(trans);
+    xform = glm::translate(trans);
+    //xform = xform * glm::translate(trans);
     transformMesh(xform);
   
     //REMOVE LATER: Check that the mesh is transformed correctly

@@ -98,13 +98,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 256;
+  const int DFRESOLUTION = 64;
   _imageDim = glm::vec2(96, 96);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="Humvee200k";
+  const char* modelname ="LionessSmooth";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -125,6 +125,9 @@ void SimpleDFPathTracer::init()
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(DFRESOLUTION, glm::vec3(0));
   _modelMesh->convertToTriangleMesh(triMesh, grid);
+
+  //now put the mesh center back at zero
+  _modelMesh->transformMesh(glm::translate(vec3(-0.5, 0.0, -0.5)));
   
   //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
@@ -163,15 +166,21 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::mat3 m(_m*elevationMatrix);
+  glm::mat3 m(_m *elevationMatrix);
+  //m = glm::inverse(m);
+
+  //glm::mat3 m;
   _modelMesh->calculateTranformedBoundingBox(_min, _max, m);
-  _max = _max - vec3(0.5f, 0.0f, 0.5f);
-  _min = _min - vec3(0.5f, 0.0f, 0.5f);
-  _targetHeight = _max.y * 0.5f;
+  _targetHeight = _max.y-_min.y *0.5f + _min.y;// *0.5f;
   glm::vec3 targetSize = _max - _min;
-  _targetPoint = vec3(0.0f, 0.5f, 0.0f);//targetSize - vec3(0.5f, 0.0f, 0.5f);
+  //_targetPoint = vec3(0.0f, _targetHeight, 0.0f);
+  _targetPoint = vec3(0.0f, targetSize.y, targetSize.z - 0.5f) * 0.5f;
+  printf("min: %3.2f %3.2f %3.2f - ", _min.x, _min.y, _min.z);
+  printf("max: %3.2f %3.2f %3.2f - ", _max.x, _max.y, _max.z);
+  printf("TargetPoint: %3.2f %3.2f %3.2f - ", _targetPoint.x, _targetPoint.y, _targetPoint.z);
+  printf("TargetSize: %3.2f %3.2f %3.2f - %3.2f\n", targetSize.x, targetSize.y, targetSize.z,  _targetHeight);
   
-  float frustumHeight = targetSize.x > targetSize.y?targetSize.x:targetSize.y;
+  float frustumHeight = targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
   frustumHeight *= 1.1f;
   
   _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
