@@ -24,6 +24,7 @@ uniform vec3 uCameraPosition;
 uniform vec3 uObjectOffset;
 uniform mat4 uCameraMatrix;
 uniform float uTargetHeight;
+uniform vec3 uTargetPoint;
 uniform float uVerticalCameraFOV;
 
 #define DFSCALING 0.6
@@ -598,7 +599,8 @@ void main() {
   seed = p.x + p.y * 3.43121412313;
 #endif
   vec3 ro = uCameraPosition;
-  vec3 ta = vec3(0.0, uTargetHeight,  0.0);//target point
+  //vec3 ta = vec3(0.0, uTargetHeight,  0.0);//target point
+  vec3 ta = uTargetPoint;
 
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );

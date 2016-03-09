@@ -169,6 +169,7 @@ public:
   }
   
   void calculateBoundingBox(vec3& min, vec3& max);
+  void calculateTranformedBoundingBox(vec3& min, vec3& max, mat3& xform);
   void movePivotToBottomMiddle();
   void fitIntoUnitCube(glm::vec3& trans, glm::vec3& min, glm::vec3& max);
   void transformMesh(glm::mat4 xform);

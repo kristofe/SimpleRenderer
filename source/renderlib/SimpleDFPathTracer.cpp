@@ -46,6 +46,8 @@ SimpleDFPathTracer::~SimpleDFPathTracer()
   delete _downsampledTexture;
   delete _shader;
   delete _filterShader;
+  delete _mesh;
+  delete _modelMesh;
 }
   
 void SimpleDFPathTracer::resetFBOs()
@@ -107,22 +109,22 @@ void SimpleDFPathTracer::init()
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
   
-  Mesh normalMesh;
   //normalMesh.createSphereMeshData(8, 8);
   //normalMesh.createCube(Vector3(0.5f), Vector3(1.0f));
   //normalMesh.createTriangle();
   
   
+  _modelMesh = new Mesh();
   _model.loadModelFromFile(inputName, true, true);
   std::vector<Material> materials;
-  _model.collapseMeshes(normalMesh, materials);
+  _model.collapseMeshes(*_modelMesh, materials);
 
-  normalMesh.fitIntoUnitCube(_trans, _min, _max);
+  _modelMesh->fitIntoUnitCube(_trans, _min, _max);
   //normalMesh.movePivotToBottomMiddle();
   
   TriangleMesh triMesh;
   std::shared_ptr<UniformHGrid> grid = std::make_shared<UniformHGrid>(DFRESOLUTION, glm::vec3(0));
-  normalMesh.convertToTriangleMesh(triMesh, grid);
+  _modelMesh->convertToTriangleMesh(triMesh, grid);
   
   //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
@@ -130,7 +132,7 @@ void SimpleDFPathTracer::init()
   printf("trans: %3.6f %3.6f %3.6f\n", _trans.x, _trans.y, _trans.z);
   printf("min: %3.6f %3.6f %3.6f\n", _min.x, _min.y, _min.z);
   printf("max: %3.6f %3.6f %3.6f\n", _max.x, _max.y, _max.z);
-  _targetHeight = _max.y * 0.5f;
+  
   
   _texture.setupDebugData(Vector2(0.0f, 0.0f), Vector2(1.0f, 1.0f));
 
@@ -161,6 +163,18 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
+  glm::mat3 m(_m*elevationMatrix);
+  _modelMesh->calculateTranformedBoundingBox(_min, _max, m);
+  _max = _max - vec3(0.5f, 0.0f, 0.5f);
+  _min = _min - vec3(0.5f, 0.0f, 0.5f);
+  _targetHeight = _max.y * 0.5f;
+  glm::vec3 targetSize = _max - _min;
+  _targetPoint = vec3(0.0f, 0.5f, 0.0f);//targetSize - vec3(0.5f, 0.0f, 0.5f);
+  
+  float frustumHeight = targetSize.x > targetSize.y?targetSize.x:targetSize.y;
+  frustumHeight *= 1.1f;
+  
+  _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
   glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
   _cameraPosition = mat3(elevationMatrix) * camPos;
   _cameraMatrix = elevationMatrix;
@@ -207,7 +221,7 @@ void SimpleDFPathTracer::draw()
   //_shader->setUniform("lightSwitches", _lightSwitching[_lightingIDX],6);
   _shader->setUniform("lights", _currLights,2);
   _shader->setUniform("lightColors", _currLightColors,2);
-  _shader->setUniform("uTargetHeight", _targetHeight);
+  _shader->setUniform("uTargetPoint", _targetPoint);
   _shader->setUniform("uVerticalCameraFOV", _verticalCameraFOV);
   
   

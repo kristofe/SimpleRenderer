@@ -68,6 +68,7 @@ namespace renderlib {
     float _verticalCameraFOV{30.0f};
     
     Mesh* _mesh;
+    Mesh* _modelMesh;
     Shader* _shader;
     Shader* _filterShader;
     vmath::Matrix4 _mvp;
@@ -83,6 +84,7 @@ namespace renderlib {
 	int _azimuthIDX;
 	int _lightingIDX;
 	glm::vec3 _cameraPosition;
+	glm::vec3 _targetPoint;
 
     glm::vec3 _trans, _min, _max;
     float _targetHeight;

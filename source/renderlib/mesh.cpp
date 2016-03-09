@@ -79,6 +79,31 @@ namespace renderlib
 
     getBoundingBox(min, max);
   }
+  
+  void Mesh::calculateTranformedBoundingBox(vec3& min, vec3& max, mat3& xform)
+  {
+    min.x = min.y = min.z = 99999999.0f;
+    max.x = max.y = max.z = -99999999.0f;
+    for (Vertex v : _verts)
+    {
+      vec3 position(v.position.x, v.position.y, v.position.z);
+      position = position * xform;
+      if (position.x < min.x)
+        min.x = position.x;
+      if (position.y < min.y)
+        min.y = position.y;
+      if (position.z < min.z)
+        min.z = position.z;
+
+      if (position.x > max.x)
+        max.x = position.x;
+      if (position.y > max.y)
+        max.y = position.y;
+      if (position.z > max.z)
+        max.z = position.z;
+    }
+
+  }
 
   bool Mesh::constructBuffer()
   {
