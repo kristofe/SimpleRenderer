@@ -85,6 +85,9 @@ namespace renderlib {
 	int _lightingIDX;
 	glm::vec3 _cameraPosition;
 	glm::vec3 _targetPoint;
+    
+    glm::vec3 _bboxCenter;
+    glm::vec3 _bboxRadius;
 
     glm::vec3 _trans, _min, _max;
     float _targetHeight;

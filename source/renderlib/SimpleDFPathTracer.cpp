@@ -175,12 +175,15 @@ void SimpleDFPathTracer::update(float time)
   glm::vec3 targetSize = _max - _min;
   //_targetPoint = vec3(0.0f, _targetHeight, 0.0f);
   _targetPoint = vec3(0.0f, targetSize.y, targetSize.z - 0.5f) * 0.5f;
+  /*
   printf("min: %3.2f %3.2f %3.2f - ", _min.x, _min.y, _min.z);
   printf("max: %3.2f %3.2f %3.2f - ", _max.x, _max.y, _max.z);
   printf("TargetPoint: %3.2f %3.2f %3.2f - ", _targetPoint.x, _targetPoint.y, _targetPoint.z);
   printf("TargetSize: %3.2f %3.2f %3.2f - %3.2f\n", targetSize.x, targetSize.y, targetSize.z,  _targetHeight);
-  
-  float frustumHeight = targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
+ */
+  _bboxCenter = _targetPoint;
+  _bboxRadius = targetSize *0.5f;
+  float frustumHeight = 2.0f;//targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
   frustumHeight *= 1.1f;
   
   _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
@@ -232,6 +235,8 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("lightColors", _currLightColors,2);
   _shader->setUniform("uTargetPoint", _targetPoint);
   _shader->setUniform("uVerticalCameraFOV", _verticalCameraFOV);
+  _shader->setUniform("uBBoxCenter", _bboxCenter);
+  _shader->setUniform("uBBoxRadius", _bboxRadius);
   
   
   _mesh->drawBuffers();

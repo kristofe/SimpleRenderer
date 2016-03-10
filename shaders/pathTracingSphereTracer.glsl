@@ -27,6 +27,9 @@ uniform float uTargetHeight;
 uniform vec3 uTargetPoint;
 uniform float uVerticalCameraFOV;
 
+uniform vec3 uBBoxCenter;
+uniform vec3 uBBoxRadius;
+
 #define DFSCALING 0.6
 #define eps 0.0001
 #define EYEPATHLENGTH 8
@@ -187,6 +190,9 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   vec2 res = vec2(
             testRayAgainstDFTexture(pos, oNormal), WHITEMAT
             );
+  res = Union( res, vec2(
+            dfBox(pos - uBBoxCenter, uBBoxRadius), REDMAT
+            ));
   nearestT = res.x;
   /*
    res = Union( res, vec2(
