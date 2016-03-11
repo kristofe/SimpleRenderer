@@ -98,13 +98,13 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 64;
+  const int DFRESOLUTION = 16;
   _imageDim = glm::vec2(96, 96);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="LionessSmooth";
+  const char* modelname ="Humvee200k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -167,14 +167,24 @@ void SimpleDFPathTracer::update(float time)
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
   glm::mat3 m(_m *elevationMatrix);
-  //m = glm::inverse(m);
 
-  //glm::mat3 m;
-  _modelMesh->calculateTranformedBoundingBox(_min, _max, m);
-  _targetHeight = _max.y-_min.y *0.5f + _min.y;// *0.5f;
+  vec3 w(glm::normalize(vec3(0.0f, _max.y*0.5f, 0.0f) - mat3(_m*elevationMatrix)*vec3(0.0,0.0,3.0)));
+  vec3 u(glm::normalize(glm::cross(w, vec3(0.0,1.0,0.0))));
+  vec3 v(glm::normalize(glm::cross(u,w)));
+  
+  glm::mat4 c;
+  
+  c[0] = vec4(u,1.0f);
+  c[1] = vec4(v,1.0f);
+  c[2] = vec4(w,1.0f);
+  c[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  
+  //c = glm::inverse(c);
+  mat3 cc = mat3(c);
+  _modelMesh->calculateTranformedBoundingBox(_min, _max, cc);
+  //_targetHeight = _max.y-_min.y *0.5f + _min.y;// *0.5f;
   glm::vec3 targetSize = _max - _min;
-  //_targetPoint = vec3(0.0f, _targetHeight, 0.0f);
-  _targetPoint = vec3(0.0f, targetSize.y, targetSize.z - 0.5f) * 0.5f;
+  _targetPoint = vec3(0.0f, targetSize.y*0.5f, 0.0f);
   /*
   printf("min: %3.2f %3.2f %3.2f - ", _min.x, _min.y, _min.z);
   printf("max: %3.2f %3.2f %3.2f - ", _max.x, _max.y, _max.z);
@@ -183,13 +193,34 @@ void SimpleDFPathTracer::update(float time)
  */
   _bboxCenter = _targetPoint;
   _bboxRadius = targetSize *0.5f;
-  float frustumHeight = 2.0f;//targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
-  frustumHeight *= 1.1f;
+  float frustumHeight = targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
+  frustumHeight = targetSize.z > frustumHeight ? targetSize.z : frustumHeight;
+  frustumHeight *= 1.2f;
   
   _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
   glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
   _cameraPosition = mat3(elevationMatrix) * camPos;
-  _cameraMatrix = elevationMatrix;
+  
+  
+  
+  vec3 ww(glm::normalize(_targetPoint - _cameraPosition));
+  vec3 uu(glm::normalize(glm::cross(ww, vec3(0.0,1.0,0.0))));
+  vec3 vv(glm::normalize(glm::cross(uu,ww)));
+  
+  glm::mat4 cm;
+  glm::mat4 mm = _m*elevationMatrix;
+  
+  //cm[0] = glm::normalize(mm[0]);
+  //cm[1] = glm::normalize(mm[1]);
+  //cm[2] = glm::normalize(mm[2]);
+  
+  cm[0] = vec4(uu,1.0f);
+  cm[1] = vec4(vv,1.0f);
+  cm[2] = vec4(ww,1.0f);
+  cm[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  
+  
+  _cameraMatrix = cm;
   
 
 
@@ -237,6 +268,8 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uVerticalCameraFOV", _verticalCameraFOV);
   _shader->setUniform("uBBoxCenter", _bboxCenter);
   _shader->setUniform("uBBoxRadius", _bboxRadius);
+  _shader->setUniform("uShowBBox", _showBBox);
+  
   
   
   _mesh->drawBuffers();
@@ -350,6 +383,11 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
     _cameraDistance = _cameraDistance +offset;
     resetFBOs();
     printf("Camera Distance: %3.2f\n", _cameraDistance);
+  }
+  if(key.key == 'B' && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+    _showBBox = _showBBox==1.0f?0.0f:1.0f;
+    resetFBOs();
   }
   if(key.key == 'D' && key.action == KeyInfo::KeyAction::RELEASE)
   {

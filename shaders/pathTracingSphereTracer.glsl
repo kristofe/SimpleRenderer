@@ -29,6 +29,7 @@ uniform float uVerticalCameraFOV;
 
 uniform vec3 uBBoxCenter;
 uniform vec3 uBBoxRadius;
+uniform float uShowBBox;
 
 #define DFSCALING 0.6
 #define eps 0.0001
@@ -190,10 +191,14 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   vec2 res = vec2(
             testRayAgainstDFTexture(pos, oNormal), WHITEMAT
             );
-  res = Union( res, vec2(
+ 
+  if(uShowBBox > 0.0f)
+  {
+    res = Union( res,  vec2(
             dfBox(pos - uBBoxCenter, uBBoxRadius), REDMAT
             ));
-  nearestT = res.x;
+  }
+            
   /*
    res = Union( res, vec2(
             //dfBox(pos - vec3(0.0,0.0,0.0), vec3(0.5,0.5,0.5)), REDMAT
@@ -278,7 +283,7 @@ vec2 rayCast( in Ray ray, in float maxT, out vec3 oNormal )
     //result will have the distance to the closest object as its first val
     nextStepSize = result.x;
     
-    //save the closest object id
+   //save the closest object id
     objectID = result.y;
   }
   
@@ -604,13 +609,19 @@ void main() {
 #else
   seed = p.x + p.y * 3.43121412313;
 #endif
+
   vec3 ro = uCameraPosition;
-  //vec3 ta = vec3(0.0, uTargetHeight,  0.0);//target point
   vec3 ta = uTargetPoint;
 
+  
+  vec3 uu = vec3(uCameraMatrix[0]);
+  vec3 vv = vec3(uCameraMatrix[1]);
+  vec3 ww = vec3(uCameraMatrix[2]);
+  /*
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
   vec3 vv = normalize( cross(uu,ww));
+  */
 
   //-----------------------------------------------------
   // render

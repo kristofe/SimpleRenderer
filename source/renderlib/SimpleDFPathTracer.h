@@ -88,7 +88,8 @@ namespace renderlib {
     
     glm::vec3 _bboxCenter;
     glm::vec3 _bboxRadius;
-
+    float _showBBox{1.0f};
+    
     glm::vec3 _trans, _min, _max;
     float _targetHeight;
   
