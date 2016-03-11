@@ -104,7 +104,7 @@ void SimpleDFPathTracer::init()
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="Humvee200k";
+  const char* modelname ="SoldierCommander60k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -195,7 +195,7 @@ void SimpleDFPathTracer::update(float time)
   _bboxRadius = targetSize *0.5f;
   float frustumHeight = targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
   frustumHeight = targetSize.z > frustumHeight ? targetSize.z : frustumHeight;
-  frustumHeight *= 1.2f;
+  frustumHeight *= 1.75f;
   
   _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
   glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
