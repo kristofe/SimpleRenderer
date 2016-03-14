@@ -104,8 +104,8 @@ void SimpleDFPathTracer::init()
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  //const char* modelname ="Humvee200k";
-  const char* modelname ="Lioness200k";
+  const char* modelname ="Humvee200k";
+  //const char* modelname ="Lioness200k";
   //const char* modelname ="SoldierCommander60k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
@@ -171,6 +171,7 @@ void SimpleDFPathTracer::update(float time)
   const bool useBoundingBox = true;
   if (useBoundingBox)
   {
+	  //glm::mat3 m(glm::inverse(elevationMatrix)*_m);
 	  glm::mat3 m(_m);
 
 	  _modelMesh->calculateTranformedBoundingBox(_min, _max, m);
@@ -183,11 +184,8 @@ void SimpleDFPathTracer::update(float time)
 	  frustumHeight *= 2.5f;
 	  _targetPoint = _bboxCenter;
 
-	  //NOTE: The problem isn't in camera distance/frustum height calculation.
-	  //There is something in the camera elevation code that is causing a problem
 	  _cameraDistance = (frustumHeight * 0.5f) / tan(deg2rad(_verticalCameraFOV*0.5f));
 	  glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
-	  //This is where the bug is... well in rotating the camera on x-axis
 	  _cameraPosition = vec3(elevationMatrix * vec4(camPos, 1.0)) + _bboxCenter;
   }
   else

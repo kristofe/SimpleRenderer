@@ -118,10 +118,7 @@ void Texture::readDistanceFieldFromDisk(int& dim, glm::vec4** data, std::string 
 {
   FILE *fp = fopen(filename.c_str(), "rb");
   
-  if(fp == NULL)
-  {
-    printf("Couldn't open file %s for reading.\n", filename.c_str());
-  }
+  assert(fp == NULL);
   
   //Set file pointer to be unbuffered
   setbuf(fp, NULL);//This may not be necessary.  fclose calls fflush();
