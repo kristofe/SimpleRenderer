@@ -15,9 +15,6 @@ RenderTexture::RenderTexture()
 {
   _fboProxy = std::make_shared<FBOProxy>();
   _clearColor = Color::black();
-  _debugMesh = nullptr;
-  _debugShader = nullptr;
-  _fullscreenShader = nullptr;
   _numRenderTargets = 1;
   //setupFullscreenData();
 }
@@ -47,6 +44,17 @@ RenderTexture::~RenderTexture()
   {
 	  delete _fullscreenShader;
 	  _fullscreenShader = nullptr;
+  }
+  if (_tonemappingMesh != nullptr)
+  {
+	  delete _tonemappingMesh;
+	  _tonemappingMesh = nullptr;
+  }
+
+  if (_tonemappingShader != nullptr)
+  {
+	  delete _tonemappingShader;
+	  _tonemappingShader = nullptr;
   }
 }
   
@@ -216,7 +224,10 @@ void RenderTexture::setupDebugData(Vector2 min, Vector2 max)
   _debugMesh->bindAttributesToVAO(*_debugShader);
 }
 
+//FIXME: LEAKED
 Mesh* RenderTexture::_fullscreenMesh = nullptr;
+//FIXME: LEAKED
+Mesh* RenderTexture::_tonemappingMesh = nullptr;
 
 void RenderTexture::drawFullscreen()
 {
@@ -227,20 +238,50 @@ void RenderTexture::drawFullscreen()
   
 	_fullscreenShader->unbind();
 }
+  
 
+void RenderTexture::drawFullscreenToneMapped(int type)
+{
+ 	_tonemappingShader->bind();
+ 	bindTargetToChannel(0, FBOProxy::ATTACHMENT::COLOR_ATTACHMENT0);
+	_tonemappingShader->setUniform("uTexture0", 0);
+	_tonemappingShader->setUniform("uType", type);
+	_tonemappingMesh->drawBuffers();
+  
+	_tonemappingShader->unbind();
+}
+
+void RenderTexture::setupToneMappingData()
+{
+
+  _tonemappingShader = new Shader();
+  _tonemappingShader->registerShader("shaders/tonemapping.vert", ShaderType::VERTEX);
+  _tonemappingShader->registerShader("shaders/tonemapping.frag", ShaderType::FRAGMENT);
+  _tonemappingShader->setAttributeLocations(Mesh::getShaderAttributeLocations());
+  _tonemappingShader->compileShaders();
+  _tonemappingShader->linkShaders();
+
+	if (_tonemappingMesh == nullptr)
+	{
+		_tonemappingMesh = new Mesh();
+		_tonemappingMesh->createScreenQuad(Vector2(-1.0f, -1.f), Vector2(1.0f, 1.0f));
+		_tonemappingMesh->bindAttributesToVAO(*_tonemappingShader);
+	}
+
+}
 void RenderTexture::setupFullscreenData()
 {
   std::stringstream fsSource;
   fsSource
-    << "#version 150\n"
-    << "  in vec2 vUV;\n"
-    << "  out vec4 color;\n"
-    << "\n"
-    << "  uniform sampler2D uTexture0;\n"
-    << "\n"
-    << "  void main(void) {\n"
-    << "    vec3 c = texture(uTexture0, vUV).rgb;\n"
-    << "    color = vec4(c, 1.0);\n"
+	  << "#version 150\n"
+	  << "  in vec2 vUV;\n"
+	  << "  out vec4 color;\n"
+	  << "\n"
+	  << "  uniform sampler2D uTexture0;\n"
+	  << "\n"
+	  << "  void main(void) {\n"
+	  << "    vec3 c = texture(uTexture0, vUV).rgb;\n"
+	  << "    color = vec4(c, 1.0);\n"
     << "  }\n";
 
   std::stringstream vsSource;

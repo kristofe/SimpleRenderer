@@ -94,6 +94,8 @@ namespace renderlib {
     float _bSphereRadius;
     float _showBSphere{0.0f};
 
+	int _toneMappingType{ 1 };
+
     glm::vec3 _trans, _min, _max;
     float _targetHeight;
   

@@ -131,7 +131,7 @@ void SimpleDFPathTracer::init()
   //now put the mesh center back at zero
   _modelMesh->transformMesh(glm::translate(vec3(-0.5, 0.0, -0.5)));
   
-  _texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
+  //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   printf("trans: %3.6f %3.6f %3.6f\n", _trans.x, _trans.y, _trans.z);
@@ -143,9 +143,11 @@ void SimpleDFPathTracer::init()
 
   _renderTexture0->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
   _renderTexture0->setupFullscreenData();
+  _renderTexture0->setupToneMappingData();
 
   _renderTexture1->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
   _renderTexture1->setupFullscreenData();
+  _renderTexture1->setupToneMappingData();
   _downsampledTexture->setupFBO(_imageDim.x, _imageDim.y, true, GL_RGBA32F, GL_RGBA, TextureDataType::TDT_FLOAT, 1);
   _downsampledTexture->setupDebugData(Vector2(-1.0, -1.0), Vector2(1.0, 1.0));
 }
@@ -290,20 +292,21 @@ void SimpleDFPathTracer::draw()
   _mesh->drawBuffers();
   _shader->unbind();
   
+  _renderTexture0->unbindFBO();
+  _renderTexture0->drawFullscreenToneMapped(_toneMappingType);
   
 
 // FIXME:  Create signed dist field.
   //FIXME: Create test cases for sphere
   if (_saveFrame)
   {
+
     //saveScreenShotTGA("screencap.tga", _currentResolution.x, _currentResolution.y);
 	  saveScreenShotPNG("screencap.png", _currentResolution.x, _currentResolution.y);
 	  _saveFrame = false || _drawDownsampled;
   }
 
-  _renderTexture0->unbindFBO();
 
-  _renderTexture0->drawFullscreen();
   
   if(_drawDownsampled)
   {
@@ -481,7 +484,25 @@ void SimpleDFPathTracer::handleKey(KeyInfo& key)
   {
   }
   
-  
+  if (key.key == 'T' && key.action == KeyInfo::KeyAction::RELEASE)
+  {
+	  if (false == InputManager::getShiftDown())
+	  {
+		  if (++_toneMappingType > 7)
+		  {
+			  _toneMappingType = 0;
+		  }
+	  }
+	  else
+	  {
+		  if (--_toneMappingType <  0)
+		  {
+			  _toneMappingType = 7;
+		  }
+	  }
+	  resetFBOs();
+	  printf("tonemapping type: %d\n", _toneMappingType);
+  }
   
   if(key.action == KeyInfo::KeyAction::PRESS)
   {

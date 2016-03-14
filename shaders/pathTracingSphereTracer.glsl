@@ -624,9 +624,9 @@ void main() {
   vec3 ta = uTargetPoint;
 
   
-  vec3 uu = vec3(uCameraMatrix[0]);
-  vec3 vv = vec3(uCameraMatrix[1]);
-  vec3 ww = vec3(uCameraMatrix[2]);
+  vec3 uu = normalize(vec3(uCameraMatrix[0]));
+  vec3 vv = normalize(vec3(uCameraMatrix[1]));
+  vec3 ww = normalize(vec3(uCameraMatrix[2]));
   /*
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
@@ -642,7 +642,7 @@ void main() {
   vec3 uvw = vec3(0.0);
 
   for( int a=0; a<SAMPLES; a++ ) {
-    vec2 rpof = 1.*(hash2()-vec2(0.5)) / iResolution.xy;
+    vec2 rpof = 1.0*(hash2()-vec2(0.5)) / iResolution.xy;
     vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + focalLength*ww );
 
 #ifdef DOF
