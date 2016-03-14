@@ -169,7 +169,6 @@ void SimpleDFPathTracer::update(float time)
   glm::mat3 m;
 
   _modelMesh->calculateTranformedBoundingSphere(_bSphereCenter, _bSphereRadius, m);
-  _targetPoint = vec3(0.0f, _bSphereRadius*0.5f, 0.0f);
 
   //_bboxCenter = _targetPoint;
   //_bboxRadius = targetSize *0.5f;
@@ -177,17 +176,16 @@ void SimpleDFPathTracer::update(float time)
   _bSphereRadius = (sin(GLFWTime::getCurrentTime())*0.5 + 0.5f) *0.5f + 0.5f;
   resetFBOs();
   _bSphereCenter.y = _bSphereRadius;
-  printf("%3.2f\n", _bSphereRadius);
-  float frustumHeight = _bSphereRadius * 2.0f;
-  _targetPoint = vec3(0.0f, frustumHeight*0.5f, 0.0f);
+  float frustumHeight = _bSphereRadius * 2.2f;
+  _targetPoint = _bSphereCenter;// vec3(0.0f, 0.0f, 0.0f);
 
   //NOTE: The problem isn't in camera distance/frustum height calculation.
   //There is something in the camera elevation code that is causing a problem
   _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
-  glm::vec3 camPos(0.0f, 0.0f, 1.0f);// _cameraDistance);
+  glm::vec3 camPos(0.0f, 0.0f,  _cameraDistance);
   //This is where the bug is... well in rotating the camera on x-axis
-  _cameraPosition = vec3(elevationMatrix * vec4(camPos,1.0));
-  _cameraPosition = glm::normalize(_cameraPosition) * _cameraDistance;
+  _cameraPosition = vec3(elevationMatrix * vec4(camPos, 1.0)) + _bSphereCenter;
+  //_cameraPosition = glm::normalize(_cameraPosition) * _cameraDistance;
   
   
   
@@ -199,7 +197,7 @@ void SimpleDFPathTracer::update(float time)
   cm[0] = vec4(uu,1.0f);
   cm[1] = vec4(vv,1.0f);
   cm[2] = vec4(ww,1.0f);
-  cm[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  cm[3] = vec4(_cameraPosition, 1.0f);
   _cameraMatrix = cm;
   
 
