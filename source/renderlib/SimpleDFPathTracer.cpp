@@ -292,8 +292,8 @@ void SimpleDFPathTracer::draw()
   _mesh->drawBuffers();
   _shader->unbind();
   
-  _renderTexture0->unbindFBO();
-  _renderTexture0->drawFullscreenToneMapped(_toneMappingType);
+ // _renderTexture0->unbindFBO();
+ // _renderTexture0->drawFullscreenToneMapped(_toneMappingType);
   
 
 // FIXME:  Create signed dist field.
@@ -306,6 +306,8 @@ void SimpleDFPathTracer::draw()
 	  _saveFrame = false || _drawDownsampled;
   }
 
+  _renderTexture0->unbindFBO();
+  _renderTexture0->drawFullscreenToneMapped(_toneMappingType);
 
   
   if(_drawDownsampled)
