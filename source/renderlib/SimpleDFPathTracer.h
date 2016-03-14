@@ -102,7 +102,8 @@ namespace renderlib {
     int _lightSwitching[7][2] = {
 	  {0, 1},//Correct
 	  {2, 7},//Correct
-	  {3, 7},
+		//THIS LIGHTING CONDITION IS NEXT
+	  {3, 4},
 	  {4, 7},
 	  {5, 7},
 	  {6, 7},
