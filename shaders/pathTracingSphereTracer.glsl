@@ -642,7 +642,7 @@ void main() {
   vec3 uvw = vec3(0.0);
 
   for( int a=0; a<SAMPLES; a++ ) {
-    vec2 rpof = 1.0*(hash2()-vec2(0.5)) / iResolution.xy;
+    vec2 rpof = 0.5*(hash2()-vec2(0.5)) / iResolution.xy;
     vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + focalLength*ww );
 
 #ifdef DOF

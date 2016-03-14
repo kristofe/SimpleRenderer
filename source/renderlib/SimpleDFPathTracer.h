@@ -94,33 +94,35 @@ namespace renderlib {
     float _bSphereRadius;
     float _showBSphere{0.0f};
 
-	int _toneMappingType{ 1 };
+	int _toneMappingType{ 7 };
 
     glm::vec3 _trans, _min, _max;
     float _targetHeight;
   
     int _lightSwitching[7][2] = {
-	  {0, 1},
-	  {0, 6},
-	  {1, 6},
-	  {2, 6},
-	  {3, 6},
-	  {4, 6},
-	  {5, 6}
+	  {0, 1},//Correct
+	  {2, 7},//Correct
+	  {3, 7},
+	  {4, 7},
+	  {5, 7},
+	  {6, 7},
+	  {7, 7}
     };
-	glm::vec4 _lights[7] = {
-		//vec4(0.5, 3.2, -0.4, 1.0),
-		vec4(0.26, 4.6, 0.2333, 1.086),
-		vec4(-1.9, 3.35, 2.0,  1.56),//Correct!!! 
+	glm::vec4 _lights[8] = {
+		//vec4(0.26, 4.6, 0.2333, 1.086),
+		vec4(1.8,4.6,-1.85, 1.52),//Correct
+		vec4(-4.5, 3.29, 8.5,  0.004),//Correct!!! 
+		vec4(1.38, 47.57, -4.76,  15.23),//Correct!!! 
 		vec4(-0.0, 3.0, 2.0, 0.65),
 		vec4(-0.0, 3.0, 2.0, 0.65),
 		vec4(-0.0, 3.0, 2.0, 0.65),
 		vec4(0.2, 4.0, -2.0, 2.0),
 		vec4(0.0, 0.0, 0.0, 0.0)
 	};
-	glm::vec3 _lightColors[7] = {
+	glm::vec3 _lightColors[8] = {
+		vec3(1.78),
 		vec3(1.18),
-		vec3(0.74),
+		vec3(2.0),
 		vec3(0.1),
 		vec3(0.1),
 		vec3(0.1),

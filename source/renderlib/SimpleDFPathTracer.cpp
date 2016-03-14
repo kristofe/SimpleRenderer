@@ -98,7 +98,7 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 128;
+  const int DFRESOLUTION = 256;
   _imageDim = glm::vec2(96, 96);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
@@ -564,6 +564,11 @@ void SimpleDFPathTracer::handlePointer(std::vector<PointerInfo>& pointers)
     
     //Size = middle drag vertical
     _currLights[lidx].w += pi.velocity.y;
+
+
+	_currLights[lidx].w = _currLights[lidx].w < 0.0f ? 0.0f : _currLights[lidx].w;
+	_currLightColors[lidx] = glm::max(_currLightColors[lidx], vec3(0.0f));
+	//_currLightColors[lidx].x = _currLightColors[lidx].x < 0.0f ? 0.0f : _currLightColors[lidx].x;
     
     printf("wdown - light%d: %2.4f, %2.4f, %2.4f, %2.4f   brightness: %2.4f\n",
            lidx,
