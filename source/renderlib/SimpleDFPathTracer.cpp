@@ -166,40 +166,28 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::mat3 m(_m *elevationMatrix);
+  glm::mat3 m;
 
-  vec3 w(glm::normalize(vec3(0.0f, _max.y*0.5f, 0.0f) - mat3(_m*elevationMatrix)*vec3(0.0,0.0,3.0)));
-  vec3 u(glm::normalize(glm::cross(w, vec3(0.0,1.0,0.0))));
-  vec3 v(glm::normalize(glm::cross(u,w)));
-  
-  glm::mat4 c;
-  
-  c[0] = vec4(u,1.0f);
-  c[1] = vec4(v,1.0f);
-  c[2] = vec4(w,1.0f);
-  c[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  
-  //c = glm::inverse(c);
-  mat3 cc = mat3(c);
-  _modelMesh->calculateTranformedBoundingBox(_min, _max, cc);
-  //_targetHeight = _max.y-_min.y *0.5f + _min.y;// *0.5f;
-  glm::vec3 targetSize = _max - _min;
-  _targetPoint = vec3(0.0f, targetSize.y*0.5f, 0.0f);
-  /*
-  printf("min: %3.2f %3.2f %3.2f - ", _min.x, _min.y, _min.z);
-  printf("max: %3.2f %3.2f %3.2f - ", _max.x, _max.y, _max.z);
-  printf("TargetPoint: %3.2f %3.2f %3.2f - ", _targetPoint.x, _targetPoint.y, _targetPoint.z);
-  printf("TargetSize: %3.2f %3.2f %3.2f - %3.2f\n", targetSize.x, targetSize.y, targetSize.z,  _targetHeight);
- */
-  _bboxCenter = _targetPoint;
-  _bboxRadius = targetSize *0.5f;
-  float frustumHeight = targetSize.x > targetSize.y ? targetSize.x : targetSize.y;
-  frustumHeight = targetSize.z > frustumHeight ? targetSize.z : frustumHeight;
-  frustumHeight *= 1.75f;
-  
+  _modelMesh->calculateTranformedBoundingSphere(_bSphereCenter, _bSphereRadius, m);
+  _targetPoint = vec3(0.0f, _bSphereRadius*0.5f, 0.0f);
+
+  //_bboxCenter = _targetPoint;
+  //_bboxRadius = targetSize *0.5f;
+
+  _bSphereRadius = (sin(GLFWTime::getCurrentTime())*0.5 + 0.5f) *0.5f + 0.5f;
+  resetFBOs();
+  _bSphereCenter.y = _bSphereRadius;
+  printf("%3.2f\n", _bSphereRadius);
+  float frustumHeight = _bSphereRadius * 2.0f;
+  _targetPoint = vec3(0.0f, frustumHeight*0.5f, 0.0f);
+
+  //NOTE: The problem isn't in camera distance/frustum height calculation.
+  //There is something in the camera elevation code that is causing a problem
   _cameraDistance = (frustumHeight * 0.5f)/tan(deg2rad(_verticalCameraFOV*0.5f));
-  glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
-  _cameraPosition = mat3(elevationMatrix) * camPos;
+  glm::vec3 camPos(0.0f, 0.0f, 1.0f);// _cameraDistance);
+  //This is where the bug is... well in rotating the camera on x-axis
+  _cameraPosition = vec3(elevationMatrix * vec4(camPos,1.0));
+  _cameraPosition = glm::normalize(_cameraPosition) * _cameraDistance;
   
   
   
@@ -208,18 +196,10 @@ void SimpleDFPathTracer::update(float time)
   vec3 vv(glm::normalize(glm::cross(uu,ww)));
   
   glm::mat4 cm;
-  glm::mat4 mm = _m*elevationMatrix;
-  
-  //cm[0] = glm::normalize(mm[0]);
-  //cm[1] = glm::normalize(mm[1]);
-  //cm[2] = glm::normalize(mm[2]);
-  
   cm[0] = vec4(uu,1.0f);
   cm[1] = vec4(vv,1.0f);
   cm[2] = vec4(ww,1.0f);
   cm[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  
-  
   _cameraMatrix = cm;
   
 
@@ -269,6 +249,10 @@ void SimpleDFPathTracer::draw()
   _shader->setUniform("uBBoxCenter", _bboxCenter);
   _shader->setUniform("uBBoxRadius", _bboxRadius);
   _shader->setUniform("uShowBBox", _showBBox);
+
+  _shader->setUniform("uBSphereCenter", _bSphereCenter);
+  _shader->setUniform("uBSphereRadius", _bSphereRadius);
+  _shader->setUniform("uShowBSphere", _showBSphere);
   
   
   

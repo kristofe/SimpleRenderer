@@ -80,6 +80,25 @@ namespace renderlib
     getBoundingBox(min, max);
   }
   
+  void Mesh::calculateTranformedBoundingSphere(vec3& center, float& radius, mat3& xform)
+  {
+    radius = 0.0f;
+	vec3 min, max;
+	//calculateTranformedBoundingBox(min, max, xform);
+	center = vec3(0.0f,0.5f, 0.0f);
+    for (Vertex v : _verts)
+    {
+      vec3 position(v.position.x, v.position.y, v.position.z);
+      position = xform*position;
+	  position = position - center;
+	  float len = glm::length(position);
+	  if (len > radius)
+	  {
+		  radius = len;
+	  }
+    }
+
+  }
   void Mesh::calculateTranformedBoundingBox(vec3& min, vec3& max, mat3& xform)
   {
     min.x = min.y = min.z = 99999999.0f;

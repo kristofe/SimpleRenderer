@@ -30,6 +30,9 @@ uniform float uVerticalCameraFOV;
 uniform vec3 uBBoxCenter;
 uniform vec3 uBBoxRadius;
 uniform float uShowBBox;
+uniform vec3 uBSphereCenter;
+uniform float uBSphereRadius;
+uniform float uShowBSphere;
 
 #define DFSCALING 0.6
 #define eps 0.0001
@@ -191,6 +194,13 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   vec2 res = vec2(
             testRayAgainstDFTexture(pos, oNormal), WHITEMAT
             );
+ 
+  if(uShowBSphere > 0.0f)
+  {
+    res = Union( res,  vec2(
+            dfSphere(pos - uBSphereCenter, uBSphereRadius), REDMAT
+            ));
+  }
  
   if(uShowBBox > 0.0f)
   {
