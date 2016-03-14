@@ -98,13 +98,15 @@ void SimpleDFPathTracer::init()
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
   //FIXME: There is a problem with the vertex format binding... UVs are invalid!
 
-  const int DFRESOLUTION = 16;
+  const int DFRESOLUTION = 128;
   _imageDim = glm::vec2(96, 96);
   _currentResolution = _imageDim;
   _gridResolution = DFRESOLUTION;
   char outputName[256];
   char inputName[256];
-  const char* modelname ="SoldierCommander60k";
+  //const char* modelname ="Humvee200k";
+  const char* modelname ="Lioness200k";
+  //const char* modelname ="SoldierCommander60k";
   sprintf(inputName, "assets/models/%s.obj", modelname);
   sprintf(outputName, "assets/%s%d.bin", modelname, DFRESOLUTION);
 
@@ -129,7 +131,7 @@ void SimpleDFPathTracer::init()
   //now put the mesh center back at zero
   _modelMesh->transformMesh(glm::translate(vec3(-0.5, 0.0, -0.5)));
   
-  //_texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
+  _texture.createDistanceFieldFromMesh(DFRESOLUTION, triMesh, true, outputName);
   _texture.loadDistanceFieldFromDisk(outputName);
 
   printf("trans: %3.6f %3.6f %3.6f\n", _trans.x, _trans.y, _trans.z);
@@ -166,8 +168,42 @@ void SimpleDFPathTracer::update(float time)
   quat qElevation = quat(EulerAnglesElevation);
   glm::mat4 elevationMatrix = glm::mat4_cast(qElevation);
 
-  glm::mat3 m;
+  const bool useBoundingBox = true;
+  if (useBoundingBox)
+  {
+	  glm::mat3 m(_m);
 
+	  _modelMesh->calculateTranformedBoundingBox(_min, _max, m);
+
+	  _bboxCenter = (_max + _min) * 0.5f;
+	  _bboxRadius = _max - _bboxCenter;
+
+	  float frustumHeight = _bboxRadius.y < _bboxRadius.x ? _bboxRadius.x : _bboxRadius.y;
+	  frustumHeight = frustumHeight < _bboxRadius.z ? _bboxRadius.z : frustumHeight;
+	  frustumHeight *= 2.5f;
+	  _targetPoint = _bboxCenter;
+
+	  //NOTE: The problem isn't in camera distance/frustum height calculation.
+	  //There is something in the camera elevation code that is causing a problem
+	  _cameraDistance = (frustumHeight * 0.5f) / tan(deg2rad(_verticalCameraFOV*0.5f));
+	  glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
+	  //This is where the bug is... well in rotating the camera on x-axis
+	  _cameraPosition = vec3(elevationMatrix * vec4(camPos, 1.0)) + _bboxCenter;
+  }
+  else
+  {
+	  glm::mat3 m;
+
+	  _modelMesh->calculateTranformedBoundingSphere(_bSphereCenter, _bSphereRadius, m);
+	  _bSphereCenter.y = _bSphereRadius;
+	  float frustumHeight = _bSphereRadius * 2.2f;
+	  _targetPoint = _bSphereCenter;
+
+	  _cameraDistance = (frustumHeight * 0.5f) / tan(deg2rad(_verticalCameraFOV*0.5f));
+	  glm::vec3 camPos(0.0f, 0.0f, _cameraDistance);
+	  _cameraPosition = vec3(elevationMatrix * vec4(camPos, 1.0)) + _bSphereCenter;
+  }
+  /*
   _modelMesh->calculateTranformedBoundingSphere(_bSphereCenter, _bSphereRadius, m);
 
   //_bboxCenter = _targetPoint;
@@ -185,8 +221,7 @@ void SimpleDFPathTracer::update(float time)
   glm::vec3 camPos(0.0f, 0.0f,  _cameraDistance);
   //This is where the bug is... well in rotating the camera on x-axis
   _cameraPosition = vec3(elevationMatrix * vec4(camPos, 1.0)) + _bSphereCenter;
-  //_cameraPosition = glm::normalize(_cameraPosition) * _cameraDistance;
-  
+  */
   
   
   vec3 ww(glm::normalize(_targetPoint - _cameraPosition));

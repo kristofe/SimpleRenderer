@@ -84,8 +84,9 @@ namespace renderlib
   {
     radius = 0.0f;
 	vec3 min, max;
-	//calculateTranformedBoundingBox(min, max, xform);
-	center = vec3(0.0f,0.5f, 0.0f);
+	calculateTranformedBoundingBox(min, max, xform);
+	center = (max + min) * 0.5f;
+	//center = vec3(0.0f,0.5f, 0.0f);
     for (Vertex v : _verts)
     {
       vec3 position(v.position.x, v.position.y, v.position.z);
