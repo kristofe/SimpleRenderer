@@ -32,12 +32,12 @@ extern "C" {
 #include "WindowManager.h"
 #include "GLFWTime.h"
 #include "shader.h"
+#include "ImageUtils.h"
 
 
-using namespace renderlib;
 using namespace vmath;
 
-
+namespace renderlib {
 Renderer::Renderer()
 {
   
@@ -159,6 +159,10 @@ void Renderer::onWindowFocus(int focused)
   }
 
 }
+
+
+  
+}//namespace renderlib
 
 
 

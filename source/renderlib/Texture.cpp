@@ -118,10 +118,7 @@ void Texture::readDistanceFieldFromDisk(int& dim, glm::vec4** data, std::string 
 {
   FILE *fp = fopen(filename.c_str(), "rb");
   
-  if(fp == NULL)
-  {
-    printf("Couldn't open file %s for reading.\n", filename.c_str());
-  }
+  assert(fp == NULL);
   
   //Set file pointer to be unbuffered
   setbuf(fp, NULL);//This may not be necessary.  fclose calls fflush();
@@ -185,15 +182,20 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
   
     auto calcClosetstPoints = [&](int n0, int n1)
     {
-      for (int x = n0; x < n1; ++x) {
+      for (int z = n0; z < n1; ++z) {
         for (int y = 0; y < n; ++y) {
-          for (int z = 0; z < n; ++z) {
-            glm::vec3 p(x/dim,y/dim,z/dim);
+          for (int x = 0; x < n; ++x) {
+            glm::vec3 p((x)/dim,(y)/dim,(z)/dim);
       	  //Storing distance
             glm::vec3 closestPoint, closestNormal;
             p = p + offset;
             float dist = mesh.getClosestPoint(p, closestPoint, closestNormal);
-            int idx = x*n*n + y*n + z;
+
+			//3D texture memory layout is layers of 2D textures.  
+			//So z*n*n is the stride in z. z images of n*n
+			//y*n is the stride in y, y rows of x
+			//x is the row offset
+            int idx = z*n*n + y*n + x;
             data[idx].w = dist;
       		  //Storing normal too
             data[idx].x = closestNormal.x;
@@ -237,8 +239,9 @@ void Texture::createDistanceFieldFromMesh(int n, const TriangleMesh& mesh, bool 
   if(!writeToFile)
   {
     _textureProxy->target = GL_TEXTURE_3D;
-    _textureProxy->internalFormat = GL_RGBA;
-    //_textureProxy->internalFormat = GL_RED;
+	//Weird artifacts happen if you don't specify precision of the float
+    _textureProxy->internalFormat = GL_RGBA32F;
+    //_textureProxy->internalFormat = GL_R32F;
     _textureProxy->width = n;
     _textureProxy->height = n;
     _textureProxy->depth = n;
@@ -282,8 +285,9 @@ void Texture::loadDistanceFieldFromDisk( std::string const& filename)
     printf("read %s, dim %d\n", filename.c_str(), n);
   
     _textureProxy->target = GL_TEXTURE_3D;
-    _textureProxy->internalFormat = GL_RGBA;
-    //_textureProxy->internalFormat = GL_RED;
+	//Weird artifacts happen if you don't specify precision of the float
+    _textureProxy->internalFormat = GL_RGBA32F;
+    //_textureProxy->internalFormat = GL_R32F;
     _textureProxy->width = n;
     _textureProxy->height = n;
     _textureProxy->depth = n;
@@ -436,6 +440,30 @@ void Texture::debugDraw()
   _debugShader->setUniform("uTimeScale", 0.5f);
   _debugMesh->drawBuffers();
 
+  _debugShader->unbind();
+}
+  
+void Texture::debugDraw(glm::ivec4 viewport)
+{
+
+  if(_debugMesh == nullptr) return;
+  
+  _debugShader->bind();
+
+  bindToChannel(0);
+  
+  _debugShader->setUniform("uTexture0",0);
+  _debugShader->setUniform("iGlobalTime", GLFWTime::getCurrentTime());
+  _debugShader->setUniform("uTimeScale", 0.5f);
+  
+  int cachedViewport[4];
+  glGetIntegerv(GL_VIEWPORT, cachedViewport);
+  glViewport(viewport.x,viewport.y, viewport.z, viewport.w);
+  GetGLError();
+  _debugMesh->drawBuffers();
+  glViewport(cachedViewport[0], cachedViewport[1],
+             cachedViewport[2], cachedViewport[3]);
+  GetGLError();
   _debugShader->unbind();
 }
 

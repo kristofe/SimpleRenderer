@@ -1,0 +1,61 @@
+The image acquisition system was composed of a
+turntable on which object were placed, two Hitachi KPD20AU
+CCD cameras mounted on a swiveling arm, and
+four studio lights with bounce umbrellas. The angle of the
+turntable, the elevations of the camera arm, and the intensity
+of the lights were all under computer control. The cameras
+were 41cm away from the objects (roughly arm length)
+and 7.5cm apart from each other (roughly the distance between
+the two eyes in humans). The lenses’ focal length
+was set around 16mm. The turntable was 70cm in diameter
+and had a uniform medium gray color. The lights were
+placed at various fixed locations and distances around the
+object. We collected images of 50 different toys shown in figure
+1. The collection consists of 10 instances of 5 generic
+categories: four-legged animals, human figures, airplanes,
+trucks, and cars. All the objects were painted with a uniform
+bright green. The uniform color ensured that all irrelevant
+color and texture information was eliminated. 1,944
+stereo pairs were collected for each object instance: 9 elevations
+(30, 35, 40, 45, 50, 55, 60, 65, and 70 degrees from the
+horizontal), 36 azimuths (from 0 to 350?
+every 10?), and 6 lighting conditions (various on-off combinations of the four
+lights). A total of 194,400 RGB images at 640×480 resolution
+were collected (5 categories, 10 instances, 9 elevations,
+36 azimuths, 6 lightings, 2 cameras) for a total of 179GB
+of raw data. Note that each object instance was placed in a
+different initial pose, therefore “0 degree angle” may mean
+“facing left” for one instance of an animal, and “facing 30
+degree right” for another instance.
+
+2.2. Processing
+Training and testing samples were generated so as to
+carefully remove (or avoid) any potential bias in the data
+that might make the task easier than it would be in realistic
+situations. The object masks and their cast shadows
+were extracted from the raw images. A scaling factor was
+determined for each of the 50 object instances by computing
+the bounding box of the union of all the object masks
+for all the images of that instance. The scaling factor was
+chosen such that the largest dimension of the bounding box
+was 80 pixels. This removed the most obvious systematic
+bias caused by the variety of sizes of the objects (e.g. most
+airplanes were larger than most human figures in absolute
+terms). The segmented and normalized objects were then
+composited (with their cast shadows) in the center of various
+96 × 96 pixel background images. In some experiments,
+the locations, scales, image-plane angle, brightness,
+and contrast were randomly perturbed during the compositing
+process.
+2.3. Datasets
+Experiments were conducted with four datasets generated
+from the normalized object images. The first two
+datasets were for pure categorization experiments (a somewhat
+unrealistic task), while the last two were for simultaneous
+detection/segmentation/recognition experiments.
+All datasets used 5 instances of each category for training
+and the 5 remaining instances for testing. In the normalized
+dataset, 972 images of each instance were used: 9 elevations,
+18 azimuths (0 to 360?every 20?), and 6 illuminations,
+for a total of 24,300 training samples and 24,300 test
+samples.

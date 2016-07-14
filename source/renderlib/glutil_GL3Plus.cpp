@@ -128,6 +128,29 @@ namespace renderlib{
       GetGLError();
     }
 
+    void FBOProxy::setFBOSize(int w, int h)
+    {
+      if(hasDepth || !ready)
+        return;
+
+
+      if(w != width || h != height)
+      {
+        width = w;
+        height = h;
+
+        //Avoid large FBO's - crashes intel drivers
+        if (width > 2048 || height > 2048)
+        {
+          std::cout << "Requested FBO size is greater than 2048.  Halving the dimensions to prevent crash on intel Drivers" << std::endl;
+          width /= 2;
+          height /= 2;
+        }
+        GLUtil::resizeFBO(*this);
+//        setupFBO(vp[2], vp[3], false, (TextureDataType)colorDataType);
+      }
+    }
+
     void FBOProxy::matchFBOSizeToViewport()
     {
       if(hasDepth || !ready)
@@ -1945,6 +1968,7 @@ namespace renderlib{
       while (fin.read((char*)&data[position], chunkSize))
         position += 512;
       fin.close();
+	  proxy.internalFormat = GL_R32F;
       glTexImage3D(proxy.target, 0,
         proxy.internalFormat,
         proxy.width, proxy.height, proxy.depth, 0,
@@ -1979,9 +2003,9 @@ namespace renderlib{
     float frequency = 3.0f / n;
     float center = n / 2.0f + 0.5f;
 
-    for (int x = 0; x < n; ++x) {
+    for (int z = 0; z < n; ++z) {
       for (int y = 0; y < n; ++y) {
-        for (int z = 0; z < n; ++z) {
+        for (int x = 0; x < n; ++x) {
           float dx = center - x;
           float dy = center - y;
           float dz = center - z;
@@ -1998,10 +2022,10 @@ namespace renderlib{
           *ptr++ = isFilled ? 255 : 0;
         }
       }
-      fprintf(stdout,"Slice %d of %d\n", x, n);
+      fprintf(stdout,"Slice %d of %d\n", z, n);
     }
     proxy.target = GL_TEXTURE_3D;
-    proxy.internalFormat = GL_RED;
+    proxy.internalFormat = GL_R8;
     proxy.width = n;
     proxy.height = n;
     proxy.depth = n;
@@ -2044,9 +2068,9 @@ namespace renderlib{
     float frequency = 3.0f / n;
     float center = n / 2.0f + 0.5f;
 
-    for (int x = 0; x < n; ++x) {
+    for (int z = 0; z < n; ++z) {
       for (int y = 0; y < n; ++y) {
-        for (int z = 0; z < n; ++z) {
+        for (int x = 0; x < n; ++x) {
           float dx = x - center;
           float dy = y - center;
           float dz = z - center;
@@ -2072,11 +2096,11 @@ namespace renderlib{
 		  *ptr++;
         }
       }
-      fprintf(stdout,"Slice %d of %d\n", x, n);
+      fprintf(stdout,"Slice %d of %d\n", z, n);
     }
 	/*
     proxy.target = GL_TEXTURE_3D;
-    proxy.internalFormat = GL_RED;
+    proxy.internalFormat = GL_R32F;
     proxy.width = n;
     proxy.height = n;
     proxy.depth = n;
@@ -2086,7 +2110,7 @@ namespace renderlib{
     proxy.glID = handle;
 	*/
     proxy.target = GL_TEXTURE_3D;
-    proxy.internalFormat = GL_RGBA;
+    proxy.internalFormat = GL_RGBA32F;
     proxy.width = n;
     proxy.height = n;
     proxy.depth = n;

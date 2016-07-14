@@ -279,6 +279,7 @@ namespace renderlib
                        int attachment = ATTACHMENT::COLOR_ATTACHMENT0);
     void unbindFromChannel(int textureChannel);
     void matchFBOSizeToViewport();
+    void setFBOSize(int w, int h);
     void clear(Color c);
     
 

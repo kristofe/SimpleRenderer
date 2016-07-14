@@ -58,6 +58,7 @@ public:
   void uploadData(){_textureProxy->uploadData();}
 
   virtual void debugDraw();
+  virtual void debugDraw(glm::ivec4 viewport);
   virtual void setupDebugData(Vector2 min, Vector2 max);
 
   unsigned int getID(){ return static_cast<unsigned int>(_textureProxy->glID); }

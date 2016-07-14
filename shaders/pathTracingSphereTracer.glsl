@@ -14,13 +14,31 @@ uniform float iGlobalTime;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
 uniform mat4 uModelMatrix;
+uniform mat4 uNormalMatrix;
 uniform mat4 uModelInverseMatrix;
 uniform float uGridResolution;
 uniform sampler3D Density;
+uniform sampler2D uPreviousFrameTexture;
 
+uniform vec3 uCameraPosition;
+uniform vec3 uObjectOffset;
+uniform mat4 uCameraMatrix;
+uniform float uTargetHeight;
+uniform vec3 uTargetPoint;
+uniform float uVerticalCameraFOV;
+
+uniform vec3 uBBoxCenter;
+uniform vec3 uBBoxRadius;
+uniform float uShowBBox;
+uniform vec3 uBSphereCenter;
+uniform float uBSphereRadius;
+uniform float uShowBSphere;
+
+#define DFSCALING 0.6
 #define eps 0.0001
-#define EYEPATHLENGTH 3
-#define SAMPLES 8
+#define EYEPATHLENGTH 8
+#define SAMPLES 1
+
 
 #define FULLBOX
 
@@ -31,9 +49,10 @@ uniform sampler3D Density;
 #define MOTIONBLURFPS 12.
 
 //#define LIGHTCOLOR vec3(16.86, 10.76, 8.2)*1.3
-#define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*1.3
-//#define WHITECOLOR vec3(.7295, .7355, .729)*0.7
-#define WHITECOLOR vec3(.9999, .9999, .9999)
+#define LIGHTCOLOR vec3(16.86, 16.76, 16.2)*0.5
+//#define WHITECOLOR vec3(.7295, .7355, .729)*0.9
+#define WHITECOLOR vec3(1., 1., 1.)*0.5
+#define FLOORCOLOR vec3(1., 1., 1.) * 0.8
 #define GREENCOLOR vec3(.117, .4125, .115)*0.7
 #define REDCOLOR vec3(.611, .0555, .062)*0.7
 
@@ -41,7 +60,43 @@ uniform sampler3D Density;
 #define WHITEMAT 1
 #define GREENMAT  2
 #define REDMAT  3
+#define FLOORMAT 4
 
+//TOP MEDIUM + LEFT = L0
+//TOP BRIGHT + FRONT = L1
+//FRONT = L2
+//FRONT + TOP MEDIUM = L3
+// front + right = L4
+//TOP BRIGHT = L5
+
+#define LIGHTCOUNT 2
+
+uniform vec4 lights[LIGHTCOUNT];
+uniform vec3 lightColors[LIGHTCOUNT];
+
+/*
+uniform float lightSwitches[6];
+
+//NOTE:  Best results are from rescaling a higher resolution image down to 96x96.  
+//Much closer to the the actual training data
+const vec4 lights[6]=vec4[6](
+  vec4(  0.5, 3.2, -0.4, 1.0), 
+  vec4( -1.0, 1.0, 2.2,  4.0),//Correct!!! 
+  vec4( -0.0, 3.0, 2.0, 0.65), 
+  vec4( -0.0, 3.0, 2.0, 0.65),
+  vec4( -0.0, 3.0, 2.0, 0.65),
+  vec4( 0.2, 4.0, -2.0, 2.0) 
+);
+
+const vec3 lightColors[6]=vec3[6](
+  vec3(1., 1., 1.)*1.3,
+  vec3(1., 1., 1.)*0.6,
+  vec3(1., 1., 1.)*0.1, 
+  vec3(1., 1., 1.)*0.1, 
+  vec3(1., 1., 1.)*0.1, 
+  vec3(1., 1., 1.)*0.1
+);
+*/
 
 float seed = iGlobalTime;
 
@@ -102,7 +157,8 @@ vec2 Union( vec2 d1, vec2 d2 )
 float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
 {
   //TODO:make these parameters
-  vec3 boxOrigin = vec3(0.0, 0.0, 0.0);
+  //vec3 boxOrigin = vec3(0.0, 0.5, 0.0);
+  vec3 boxOrigin = vec3(0.0, 0.5, 0.0);// - uObjectOffset;
   vec3 boxRadius = vec3(0.5, 0.5, 0.5);
   
   vec3 invpos = (uModelInverseMatrix * vec4(pos,1.0)).xyz;
@@ -113,9 +169,10 @@ float testRayAgainstDFTexture(in vec3 pos, out vec3 oNormal)
   //localTexCoords = clamp(localTexCoords, 0.0, 1.0);
   localTexCoords = clamp(localTexCoords, 0.5*cellSize, 1.0 - cellSize*0.5);
   
-  float dist = texture(Density, localTexCoords).a - 0.75*cellSize;
-  oNormal = texture(Density, localTexCoords).rgb;
-  oNormal = mat3(uModelMatrix) * oNormal;
+  vec4 distField = texture(Density, localTexCoords);
+  float dist = distField.w - DFSCALING*cellSize;
+  oNormal = distField.xyz;
+  oNormal = mat3(uNormalMatrix) * oNormal;
   oNormal = normalize(oNormal);
   //Have to add distance of outside box - This is the distance from the
   //localTexCoords plus the distance to the global position that that barycentric
@@ -137,7 +194,21 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   vec2 res = vec2(
             testRayAgainstDFTexture(pos, oNormal), WHITEMAT
             );
-  nearestT = res.x;
+ 
+  if(uShowBSphere > 0.0f)
+  {
+    res = Union( res,  vec2(
+            dfSphere(pos - uBSphereCenter, uBSphereRadius), REDMAT
+            ));
+  }
+ 
+  if(uShowBBox > 0.0f)
+  {
+    res = Union( res,  vec2(
+            dfBox(pos - uBBoxCenter, uBBoxRadius), REDMAT
+            ));
+  }
+            
   /*
    res = Union( res, vec2(
             //dfBox(pos - vec3(0.0,0.0,0.0), vec3(0.5,0.5,0.5)), REDMAT
@@ -149,7 +220,6 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
   WHITEMAT
   ));
  */ 
-  
       /*
   res = Union( res, 
       vec2( dfSphere( pos-vec3(0.2,0.35,-0.5), 0.4) + 0.05 , GREENMAT)
@@ -166,32 +236,34 @@ vec2 testRayAgainstScene( in vec3 pos, out vec3 oNormal){
             ) + 0.05 ,
             REDMAT
           )
-  );*/
-  res = Union( res, vec2( dfPlane(pos - vec3(-0.5)), WHITEMAT ));
+  );
+  res = Union( res, vec2( dfPlane(pos - vec3(-0.0)), WHITEMAT ));
   if(res.x < nearestT)
   {
   	oNormal = vec3(0,1,0);
   }
+       */
   return res;
 }
 
-/*
+
 vec3 calcNormal( in vec3 pos )
 {
+  vec3 ignored;
   vec2 offset = vec2(0.0001, 0.0);
   vec3 normal = vec3(
   //Finite Diff on x - axis. Remember that the test returns a vec2.
-  testRayAgainstScene(pos+offset.xyy).x-testRayAgainstScene(pos-offset.xyy).x,
+  testRayAgainstScene(pos+offset.xyy, ignored).x-testRayAgainstScene(pos-offset.xyy, ignored).x,
   
   //Finite Diff on y - axis. Remember that the test returns a vec2
-  testRayAgainstScene(pos+offset.yxy).x-testRayAgainstScene(pos-offset.yxy).x,
+  testRayAgainstScene(pos+offset.yxy, ignored).x-testRayAgainstScene(pos-offset.yxy, ignored).x,
   
   //Finite Diff on z - axis. Remember that the test returns a vec2
-  testRayAgainstScene(pos+offset.yyx).x-testRayAgainstScene(pos-offset.yyx).x
+  testRayAgainstScene(pos+offset.yyx, ignored).x-testRayAgainstScene(pos-offset.yyx, ignored).x
   );
   return normalize(normal);
 }
-*/
+
 
 //*************************************************************************
 //Technically this is Sphere tracing
@@ -203,7 +275,7 @@ vec2 rayCast( in Ray ray, in float maxT, out vec3 oNormal )
   float cutoff = 1e-6;
   float nextStepSize= cutoff * 2.0;
   
-  for(int i = 0; i < 96; i++)
+  for(int i = 0; i < 128; i++)
   {
     //Exit if we get close to something or if we go too far
     if(abs(nextStepSize) <= cutoff || t >= maxT)
@@ -211,16 +283,17 @@ vec2 rayCast( in Ray ray, in float maxT, out vec3 oNormal )
       //If we went too far force a result that intersected nothing
       if(t > maxT)
         objectID = -1.0;
-      continue;
+      //continue;
+      break;
     }
     
-    t += nextStepSize*0.5;//FIXME: This is a hack because I shoot through thin fields.
+    t += nextStepSize * 0.85;//FIXME: This is a hack because I shoot through thin fields.
     vec2 result = testRayAgainstScene( ray.origin+ray.dir*t, oNormal);
     
     //result will have the distance to the closest object as its first val
     nextStepSize = result.x;
     
-    //save the closest object id
+   //save the closest object id
     objectID = result.y;
   }
   
@@ -291,16 +364,10 @@ vec3 randomHemisphereDirection( const vec3 n ) {
 // light
 //-----------------------------------------------------
 
-vec4 lightSphere;
 
-void initLightSphere( float time ) {
-	//lightSphere = vec4( 3.0+2.*sin(time),2.8+2.*sin(time*0.9),3.0+4.*cos(time*0.7), .5 );
-	lightSphere = vec4( 1.0+2.*sin(time),2.8+2.*sin(time*0.9),0.0+4.*cos(time*0.7), .5 );
-}
-
-vec3 sampleLight( const in vec3 ro ) {
-    vec3 n = randomSphereDirection() * lightSphere.w;
-    return lightSphere.xyz + n;
+vec3 sampleLight( const in vec3 ro, const int lightID ) {
+  vec3 n = randomSphereDirection() * lights[lightID].w;
+  return lights[lightID].xyz + n;
 }
 
 //-----------------------------------------------------
@@ -311,9 +378,9 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
 	vec2 res = vec2( 1e20, -1.0 );
   float t;
 	
-  /*
   //Box
-  t = planeIntersect( ro, rd, vec4( 0.0, 1.0, 0.0,0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 1., 0.); }
+  t = planeIntersect( ro, rd, vec4( 0.0, 1.0, 0.0, 0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, FLOORMAT ); normal = vec3( 0., 1., 0.); }
+  /*
   t = planeIntersect( ro, rd, vec4( 0.0, 0.0,-1.0,8.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 1. ); normal = vec3( 0., 0.,-1.); }
   t = planeIntersect( ro, rd, vec4( 1.0, 0.0, 0.0,0.0 ) ); if( t>eps && t<res.x ) { res = vec2( t, 2. ); normal = vec3( 1., 0., 0.); }
 #ifdef FULLBOX
@@ -326,9 +393,12 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   //This is the green transparent sphere
   //t = sphereIntersect( ro, rd, vec4( 4.0,1.0, 4.0, 1.0) ); if( t>eps && t<res.x ) { res = vec2( t, 6. ); normal = sphereNormal( ro+t*rd, vec4( 4.0,1.0, 4.0,1.0) ); }
 
-*/
   //This is the light source
-  t = sphereIntersect( ro, rd, lightSphere ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lightSphere ); }
+  t = sphereIntersect( ro, rd, lights[0] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[0] ); }
+  t = sphereIntersect( ro, rd, lights[1] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[1] ); }
+  t = sphereIntersect( ro, rd, lights[2] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[2] ); }
+  t = sphereIntersect( ro, rd, lights[3] ); if( t>eps && t<res.x ) { res = vec2( t, 0.0 );  normal = sphereNormal( ro+t*rd, lights[3] ); }
+*/
   //Sphere trace!!!!
   Ray ray;
   ray.origin = ro;
@@ -346,7 +416,7 @@ vec2 intersect( in vec3 ro, in vec3 rd, inout vec3 normal ) {
   return res;
 }
 
-bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
+bool intersectShadow( in vec3 ro, in vec3 rd, in float dist, in vec3 normal) {
     float t;
 	
   //t = sphereIntersect( ro, rd, vec4( 1.5,1.0, 2.7,1.0) );  if( t>eps && t<dist ) { return true; }
@@ -355,7 +425,7 @@ bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
 
   //Test against distance field
   Ray ray;
-  ray.origin = ro;
+  ray.origin = ro + (normal * eps);
   ray.dir = rd;
   float maxT = 100.0;
 
@@ -369,21 +439,11 @@ bool intersectShadow( in vec3 ro, in vec3 rd, in float dist ) {
 //-----------------------------------------------------
 // materials
 //-----------------------------------------------------
-/*
-vec3 matColor( const in float mat ) {
-	vec3 nor = vec3(0., 0.95, 0.);
-	
-	if( mat<3.5 ) nor = REDCOLOR;
-  if( mat<2.5 ) nor = GREENCOLOR;
-	if( mat<1.5 ) nor = WHITECOLOR;
-	if( mat<0.5 ) nor = LIGHTCOLOR;
-					  
-  return nor;
-}*/
 vec3 matColor( const in float mat ) {
   vec3 col = vec3(0., 0.95, 0.);
       
   if( mat == REDMAT ) col = REDCOLOR;
+  if( mat == FLOORMAT ) col = FLOORCOLOR;
   if( mat == GREENMAT ) col = GREENCOLOR;
   if( mat == WHITEMAT ) col = WHITECOLOR;
   if( mat == LIGHTMAT ) col = LIGHTCOLOR;
@@ -465,15 +525,42 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 
       fcol *= matColor( res.y );
 
-      vec3 ld = sampleLight( ro ) - ro;
+      for(int lightID = 0; lightID < LIGHTCOUNT; lightID++)
+      {
+        vec3 ld = sampleLight( ro , lightID) - ro;
 
-      vec3 nld = normalize(ld);
-      if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld)) ) {
+        vec3 nld = normalize(ld);
+        if( !specularBounce && j < EYEPATHLENGTH-1 && !intersectShadow( ro, nld, length(ld), normal) ) {
 
-        float cos_a_max = sqrt(1. - clamp(lightSphere.w * lightSphere.w / dot(lightSphere.xyz-ro, lightSphere.xyz-ro), 0., 1.));
-        float weight = 2. * (1. - cos_a_max);
+        /*
+        //This is the old light calculation
+          float cos_a_max = sqrt(1. - clamp(lights[lightID].w * lights[lightID].w / dot(lights[lightID].xyz-ro, lights[lightID].xyz-ro), 0., 1.));
+          float weight = 2. * (1. - cos_a_max);
+          tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (weight * clamp(dot( nld, normal ), 0., 1.));
+          //tcol += (fcol * lightColors[lightID] * lightSwitches[lightID]) * (clamp(dot( nld, normal ), 0., 1.));
+          */
 
-        tcol += (fcol * LIGHTCOLOR) * (weight * clamp(dot( nld, normal ), 0., 1.));
+//FIXME: THIS NEEDS TO BE CLEANED UP AND TWEAKED
+          const float specularPower = 2.0;
+          const float ambient = 0.00;
+
+		const vec3 diffuseColor = vec3(1.0);
+		const vec3 specColor = vec3(1.0);
+		vec3 lightDir = normalize(vec3(lights[lightID])- ro);
+
+		float lambertian = max(dot(lightDir,normal), 0.0);
+
+		vec3 reflectDir = reflect(-lightDir, normal);
+		vec3 viewDir = normalize(ro);
+
+		float specAngle = max(dot(reflectDir, viewDir), 0.0);
+		float specular = pow(specAngle, specularPower);
+
+        //tcol += fcol*lightColors[lightID]*(lambertian*diffuseColor +specular*specColor + vec3(ambient));
+        tcol += fcol*lightColors[lightID]*(lambertian*diffuseColor);
+
+          //tcol += normal;
+        }
       }
     }    
     return tcol;
@@ -483,27 +570,68 @@ vec3 traceEyePath( in vec3 ro, in vec3 rd) {
 // main
 //-----------------------------------------------------
 void main() {
+/*
+	float mx = max( resolution.x, resolution.y );
+	vec2 uv = gl_FragCoord.xy/mx;
+	
+	// center image
+	uv += (1.-resolution.xy/mx)/2.;
+	
+	//     screen
+	//      /|     ___
+	//     / p    /   \
+	//    /  |   |     |     ^ y
+	// eye  -0-  |     |     |
+	//    \  |   |     |     |
+	//     \ |    \___/      o---> z
+	//      \|                \
+	//                         x
+	//
+	// -0- marks the origin point (0,0,0) - middle of the screen
+	
+	vec3 p = vec3((uv-.5)*2., 0);
+	vec3 eye = vec3(0,0,-5); // z coord is the focal length
+	vec3 dir = normalize(p-eye); // ray direction
+*/
   vec2 fragCoord = gl_FragCoord.xy;
-	vec2 q = fragCoord.xy / iResolution.xy;
+  vec2 q = fragCoord.xy / iResolution.xy;
     
   //-----------------------------------------------------
   // camera
   //-----------------------------------------------------
-  vec2 p = -1.0 + 2.0 * (fragCoord.xy) / iResolution.xy;
-  p.x *= iResolution.x/iResolution.y;
+  vec2 p = -1.0 + 2.0 * (fragCoord.xy) / iResolution.xy;//translates coord to [-1,1]
+  p.x *= iResolution.x/iResolution.y;//Aspect ratio adjustment
+
+  //-----------------------------------------------------
+  //FOV adjustment
+  //-----------------------------------------------------
+  //const float verticalFOV = 30.0;
+  const float PI = 3.14159265359;
+  float theta = uVerticalCameraFOV*PI/180.0;
+  float tanTheta = tan(theta/2.0);
+  const float focalLength = 1.0;//if set to something to other than 1 it will break fov calculation
+  p = p * tanTheta; //Scales the camera plane to fit fov at focal length 1
+
+
 
 #ifdef ANIMATENOISE
   seed = p.x + p.y * 3.43121412313 + fract(1.12345314312*iGlobalTime);
 #else
   seed = p.x + p.y * 3.43121412313;
 #endif
-  vec3 ro = vec3(0.0, 1.0, 3.00);
-  vec3 ta = vec3(0.0, -0.5,  -1.00);//target point
-  //vec3 ro = vec3(2.78, 2.73, -8.00);
-  //vec3 ta = vec3(2.78, 2.73,  0.00);
+
+  vec3 ro = uCameraPosition;
+  vec3 ta = uTargetPoint;
+
+  
+  vec3 uu = normalize(vec3(uCameraMatrix[0]));
+  vec3 vv = normalize(vec3(uCameraMatrix[1]));
+  vec3 ww = normalize(vec3(uCameraMatrix[2]));
+  /*
   vec3 ww = normalize( ta - ro );
   vec3 uu = normalize( cross(ww,vec3(0.0,1.0,0.0) ) );
   vec3 vv = normalize( cross(uu,ww));
+  */
 
   //-----------------------------------------------------
   // render
@@ -514,8 +642,8 @@ void main() {
   vec3 uvw = vec3(0.0);
 
   for( int a=0; a<SAMPLES; a++ ) {
-    vec2 rpof = 4.*(hash2()-vec2(0.5)) / iResolution.xy;
-    vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + 3.0*ww );
+    vec2 rpof = 0.5*(hash2()-vec2(0.5)) / iResolution.xy;
+    vec3 rd = normalize( (p.x+rpof.x)*uu + (p.y+rpof.y)*vv + focalLength*ww );
 
 #ifdef DOF
     vec3 fp = ro + rd * 12.0;
@@ -526,9 +654,9 @@ void main() {
 #endif        
 
 #ifdef MOTIONBLUR
-    initLightSphere( iGlobalTime + hash1() / MOTIONBLURFPS );
+    //initLights( iGlobalTime + hash1() / MOTIONBLURFPS );
 #else
-    initLightSphere( iGlobalTime );
+    //initLights( iGlobalTime );
 #endif
 
     col = traceEyePath( rof, rd);
@@ -536,10 +664,23 @@ void main() {
     seed = mod( seed*1.1234567893490423, 13. );
   }
 
-  tot /= float(SAMPLES);
+  //tot /= float(SAMPLES);
+
+  //now sample the last frame
+  vec4 last = texture(uPreviousFrameTexture,q);
+  vec3 lastTot = last.xyz;
+  lastTot *= last.w;
+
+  //tot += vec3(0.01,0.01,0.01);
+  float totSamples = last.w + float(SAMPLES);
+
+  tot = (tot + lastTot)/totSamples;
     
-	tot = pow( clamp(tot,0.0,1.0), vec3(0.45) );
-  fragColor = vec4( tot, 1.0 );
+  //The pow breaks accumulation - have to gamma correct at some other point
+	//tot = pow( clamp(tot,0.0,1.0), vec3(0.45) );
+  //tot = clamp(tot, 0.0, 1.0);
+
+  fragColor = vec4( tot, totSamples);
 }
 
 

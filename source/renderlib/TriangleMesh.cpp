@@ -83,14 +83,43 @@ namespace renderlib
 	  }
 	  //Retrieve triangle from stored indices... an optimization
 	  const TriangleMeshTriangle& tri = _triangles[ti];
-	  glm::vec3 nw = closestPointBarycentric;
+	  //glm::vec3 nw = closestPointBarycentric;
 
-	  closestNormal = glm::normalize(nw.x*tri.n0 + nw.y*tri.n1 + nw.z*tri.n2);
+	  closestNormal =  interpolateNormals(closestPointBarycentric, tri);// glm::normalize(nw.x*tri.n0 + nw.y*tri.n1 + nw.z*tri.n2);
 	  closestPoint = tmpClosestPoint;
   //float sign = getSignOfDistanceToPoint(p, tri.p0,tri.p1,tri.p2);
   
     float dist = sqrtf(closestDistanceSqr);
 	  return dist;
+  }
+  
+  glm::vec3 TriangleMesh::interpolateNormals(
+	  const glm::vec3& barycentricCoord,
+	  const TriangleMeshTriangle& tri
+	  ) const 
+
+  {
+
+	  //assert(length(tri.n0) > 0.0 && length(tri.n0) <= 1.0f);
+	  //assert(length(tri.n1) > 0.0 && length(tri.n1) <= 1.0f);
+	  //assert(length(tri.n2) > 0.0 && length(tri.n2) <= 1.0f);
+
+	  glm::vec3 closestNormal;
+
+	  closestNormal = glm::normalize(
+		  barycentricCoord.x*tri.n0 + barycentricCoord.y*tri.n1 + barycentricCoord.z*tri.n2);
+
+	  /*
+	  if (glm::length(closestNormal) <= 0.0001)
+	  {
+		  glm::vec3 e0 = tri.p1 - tri.p0;
+		  glm::vec3 e1 = tri.p2 - tri.p0;
+		  closestNormal = glm::normalize(glm::cross(e1, e0));
+	  }
+	  */
+
+	 // assert(length(closestNormal) > 0.0 && length(closestNormal) <= 1.0f);
+	  return closestNormal;
   }
   
   

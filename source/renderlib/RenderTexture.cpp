@@ -15,9 +15,6 @@ RenderTexture::RenderTexture()
 {
   _fboProxy = std::make_shared<FBOProxy>();
   _clearColor = Color::black();
-  _debugMesh = nullptr;
-  _debugShader = nullptr;
-  _fullscreenShader = nullptr;
   _numRenderTargets = 1;
   //setupFullscreenData();
 }
@@ -47,6 +44,17 @@ RenderTexture::~RenderTexture()
   {
 	  delete _fullscreenShader;
 	  _fullscreenShader = nullptr;
+  }
+  if (_tonemappingMesh != nullptr)
+  {
+	  delete _tonemappingMesh;
+	  _tonemappingMesh = nullptr;
+  }
+
+  if (_tonemappingShader != nullptr)
+  {
+	  delete _tonemappingShader;
+	  _tonemappingShader = nullptr;
   }
 }
   
@@ -93,6 +101,10 @@ void RenderTexture::matchFBOSizeToViewport()
   _fboProxy->matchFBOSizeToViewport();
 }
 
+void RenderTexture::setFBOSize(int w, int h)
+{
+  _fboProxy->setFBOSize(w,h);
+}
 
 void RenderTexture::debugDraw()
 {
@@ -112,7 +124,27 @@ void RenderTexture::debugDraw()
 
   _debugShader->unbind();
 }
-
+ void RenderTexture::debugDraw(glm::ivec4 viewport)
+  {
+    
+    if(_debugMesh == nullptr) return;
+    
+    _debugShader->bind();
+    
+    bindAllTargetsStartingAt(0);
+    
+    _debugShader->setUniform("uTexture0",0);
+    
+    int cachedViewport[4];
+    glGetIntegerv(GL_VIEWPORT, cachedViewport);
+    glViewport(viewport.x,viewport.y, viewport.z, viewport.w);
+    GetGLError();
+    _debugMesh->drawBuffers();
+    glViewport(cachedViewport[0], cachedViewport[1],
+               cachedViewport[2], cachedViewport[3]);
+    GetGLError();
+    _debugShader->unbind();
+}
 void RenderTexture::setupDebugData(Vector2 min, Vector2 max)
 {
 	if (_debugShader != nullptr)
@@ -192,31 +224,64 @@ void RenderTexture::setupDebugData(Vector2 min, Vector2 max)
   _debugMesh->bindAttributesToVAO(*_debugShader);
 }
 
+//FIXME: LEAKED
 Mesh* RenderTexture::_fullscreenMesh = nullptr;
+//FIXME: LEAKED
+Mesh* RenderTexture::_tonemappingMesh = nullptr;
 
 void RenderTexture::drawFullscreen()
 {
-	_fullscreenShader->bind();
-	bindTargetToChannel(0, FBOProxy::ATTACHMENT::COLOR_ATTACHMENT0);
+ 	_fullscreenShader->bind();
+ 	bindTargetToChannel(0, FBOProxy::ATTACHMENT::COLOR_ATTACHMENT0);
 	_fullscreenShader->setUniform("uTexture0", 0);
 	_fullscreenMesh->drawBuffers();
-//	unbind();
+  
 	_fullscreenShader->unbind();
 }
+  
 
+void RenderTexture::drawFullscreenToneMapped(int type)
+{
+ 	_tonemappingShader->bind();
+ 	bindTargetToChannel(0, FBOProxy::ATTACHMENT::COLOR_ATTACHMENT0);
+	_tonemappingShader->setUniform("uTexture0", 0);
+	_tonemappingShader->setUniform("uType", type);
+	_tonemappingMesh->drawBuffers();
+  
+	_tonemappingShader->unbind();
+}
+
+void RenderTexture::setupToneMappingData()
+{
+
+  _tonemappingShader = new Shader();
+  _tonemappingShader->registerShader("shaders/tonemapping.vert", ShaderType::VERTEX);
+  _tonemappingShader->registerShader("shaders/tonemapping.frag", ShaderType::FRAGMENT);
+  _tonemappingShader->setAttributeLocations(Mesh::getShaderAttributeLocations());
+  _tonemappingShader->compileShaders();
+  _tonemappingShader->linkShaders();
+
+	if (_tonemappingMesh == nullptr)
+	{
+		_tonemappingMesh = new Mesh();
+		_tonemappingMesh->createScreenQuad(Vector2(-1.0f, -1.f), Vector2(1.0f, 1.0f));
+		_tonemappingMesh->bindAttributesToVAO(*_tonemappingShader);
+	}
+
+}
 void RenderTexture::setupFullscreenData()
 {
   std::stringstream fsSource;
   fsSource
-    << "#version 150\n"
-    << "  in vec2 vUV;\n"
-    << "  out vec4 color;\n"
-    << "\n"
-    << "  uniform sampler2D uTexture0;\n"
-    << "\n"
-    << "  void main(void) {\n"
-    << "    vec3 c = texture(uTexture0, vUV).rgb;\n"
-    << "    color = vec4(c, 1.0);\n"
+	  << "#version 150\n"
+	  << "  in vec2 vUV;\n"
+	  << "  out vec4 color;\n"
+	  << "\n"
+	  << "  uniform sampler2D uTexture0;\n"
+	  << "\n"
+	  << "  void main(void) {\n"
+	  << "    vec3 c = texture(uTexture0, vUV).rgb;\n"
+	  << "    color = vec4(c, 1.0);\n"
     << "  }\n";
 
   std::stringstream vsSource;

@@ -79,6 +79,51 @@ namespace renderlib
 
     getBoundingBox(min, max);
   }
+  
+  void Mesh::calculateTranformedBoundingSphere(vec3& center, float& radius, mat3& xform)
+  {
+    radius = 0.0f;
+	vec3 min, max;
+	calculateTranformedBoundingBox(min, max, xform);
+	center = (max + min) * 0.5f;
+	//center = vec3(0.0f,0.5f, 0.0f);
+    for (Vertex v : _verts)
+    {
+      vec3 position(v.position.x, v.position.y, v.position.z);
+      position = xform*position;
+	  position = position - center;
+	  float len = glm::length(position);
+	  if (len > radius)
+	  {
+		  radius = len;
+	  }
+    }
+
+  }
+  void Mesh::calculateTranformedBoundingBox(vec3& min, vec3& max, mat3& xform)
+  {
+    min.x = min.y = min.z = 99999999.0f;
+    max.x = max.y = max.z = -99999999.0f;
+    for (Vertex v : _verts)
+    {
+      vec3 position(v.position.x, v.position.y, v.position.z);
+      position = xform*position;
+      if (position.x < min.x)
+        min.x = position.x;
+      if (position.y < min.y)
+        min.y = position.y;
+      if (position.z < min.z)
+        min.z = position.z;
+
+      if (position.x > max.x)
+        max.x = position.x;
+      if (position.y > max.y)
+        max.y = position.y;
+      if (position.z > max.z)
+        max.z = position.z;
+    }
+
+  }
 
   bool Mesh::constructBuffer()
   {
@@ -934,13 +979,16 @@ namespace renderlib
     
   }
   
-  void Mesh::fitIntoUnitCube()
+  void Mesh::fitIntoUnitCube(glm::vec3& trans, glm::vec3& min, glm::vec3& max)
   {
-    vec3 min, max;
+	//This now assumes that the pivot point/origin is at the base of the model and
+	//at the center of its rotation.
+
+    //vec3 min, max;
     calculateBoundingBox(min, max);
     //translate everything so each dim is greater than 1
     
-    glm::vec3 trans;
+    //glm::vec3 trans;
     if( min.x < 0)
       trans.x = -min.x;
     if(min.y < 0)
@@ -948,9 +996,11 @@ namespace renderlib
     if(min.z)
       trans.z = -min.z;
   
-    glm::vec3 fudge(0.000);//pull geometry away from the edges
-    trans = trans + fudge;
-  
+    printf("fit trans: %3.6f %3.6f %3.6f\n", trans.x, trans.y, trans.z);
+
+	//trans = glm::vec3(1.0, 1.0, 1.0);
+	trans = glm::vec3(0.5, 0.0, 0.5);
+
     //find the longest side and scale everything so it fits into a dim of one.
     glm::vec3 diff = max - min;
     float maxDim = diff.x;
@@ -963,10 +1013,11 @@ namespace renderlib
       maxDim = diff.z;
     }
   
-  float fudgeFactor = 1.0f; //Pull geometry away from the edges
-    glm::mat4 xform =  glm::scale(glm::vec3((1.0f/maxDim))*fudgeFactor);
-    xform = xform * glm::translate(trans);
-  
+	glm::mat4 xform = glm::scale(glm::vec3(1.0f / (maxDim*1.1)));
+    transformMesh(xform);
+
+    xform = glm::translate(trans);
+    //xform = xform * glm::translate(trans);
     transformMesh(xform);
   
     //REMOVE LATER: Check that the mesh is transformed correctly

@@ -43,12 +43,16 @@ public:
   void setupDepthFBO(int width, int height);
 
   void matchFBOSizeToViewport();
+  void setFBOSize(int w, int h);
 
   void debugDraw();
+  void debugDraw(glm::ivec4 viewport);
   void setupDebugData(Vector2 min, Vector2 max);
 
   void drawFullscreen();
   void setupFullscreenData();
+  void drawFullscreenToneMapped(int type);
+  void setupToneMappingData();
 
   void setClearColor(Color c) { _clearColor = c; }
   void clear();
@@ -64,11 +68,16 @@ public:
 protected:
   std::shared_ptr<FBOProxy> _fboProxy;
   Color _clearColor;
-  Mesh* _debugMesh;
-  Shader* _debugShader;
+  Mesh* _debugMesh{ nullptr };
+  Shader* _debugShader{nullptr};
 
+//FIXME: LEAKED
   static Mesh* _fullscreenMesh;
-  Shader* _fullscreenShader;
+//FIXME: LEAKED
+  static Mesh* _tonemappingMesh;
+
+  Shader* _fullscreenShader{nullptr};
+  Shader* _tonemappingShader{ nullptr };
   int _numRenderTargets;
 };
 
