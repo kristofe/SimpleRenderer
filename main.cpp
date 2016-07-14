@@ -1,10 +1,10 @@
 //
 //  main.cpp
 //
-#ifdef __APPLE__
-	#define GLFW_INCLUDE_GLCOREARB
-#elif WIN32
-  #include <GL/glew.h>
+// This is included first... It will include the opengl headers in the correct
+// order.
+#include "Platform.h"
+#ifdef WIN32
   #include "string_util/win32_debug_buffer.h"
 #endif
 
@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <cmath>
-#include "GLFW/glfw3.h" // - lib is in /usr/local/lib/libglfw3.a
+//#include "GLFW/glfw3.h" // - lib is in /usr/local/lib/libglfw3.a
 #include "Platform.h"
 #include "Renderer.h"
 #include "RenderManager.h"
